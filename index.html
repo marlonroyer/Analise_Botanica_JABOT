@@ -5,1214 +5,567 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Análise de Dados Botânicos - Formato JABOT">
     <meta name="theme-color" content="#1a3a4a">
-    
     <title>Análise Botânica - Estatísticas de Coleções</title>
-    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --primary: #1a5276;
-            --primary-light: #2c6faa;
-            --primary-dark: #0d3b5e;
-            --secondary: #1a3a4a;
-            --accent: #e67e22;
-            --accent-light: #f39c12;
-            --accent-dark: #d35400;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --info: #2980b9;
-            --light: #f8f9fa;
-            --dark: #2c3e50;
-            --gray-50: #fafbfc;
-            --gray-100: #f5f6fa;
-            --gray-200: #e8ecf1;
-            --gray-300: #d5dce6;
-            --gray-400: #b0bec5;
-            --gray-500: #90a4ae;
-            --gray-600: #607d8b;
-            --gray-700: #455a64;
-            --white: #ffffff;
+            --primary: #1a5276; --primary-light: #2c6faa; --primary-dark: #0d3b5e;
+            --secondary: #1a3a4a; --accent: #e67e22; --accent-light: #f39c12;
+            --accent-dark: #d35400; --success: #27ae60; --warning: #f39c12;
+            --danger: #e74c3c; --info: #2980b9; --light: #f8f9fa; --dark: #2c3e50;
+            --gray-50: #fafbfc; --gray-100: #f5f6fa; --gray-200: #e8ecf1;
+            --gray-300: #d5dce6; --gray-400: #b0bec5; --gray-500: #90a4ae;
+            --gray-600: #607d8b; --gray-700: #455a64; --white: #ffffff;
             --shadow-sm: 0 2px 8px rgba(26,58,74,0.06);
             --shadow-md: 0 4px 16px rgba(26,58,74,0.1);
             --shadow-lg: 0 8px 32px rgba(26,58,74,0.15);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 20px;
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
             --transition: all 0.3s ease;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--gray-100);
-            color: var(--dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background: var(--gray-100); color: var(--dark);
+            min-height: 100vh; display: flex; flex-direction: column;
         }
-
-        /* ==================== HEADER ==================== */
         .app-header {
             background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
-            color: var(--white);
-            padding: 2rem 1.5rem;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            color: var(--white); padding: 1.5rem 1.5rem; box-shadow: var(--shadow-md);
+            position: sticky; top: 0; z-index: 1000;
         }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 0.5rem;
-        }
-
-        .logo i {
-            font-size: 2.5em;
-            color: var(--accent);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .logo h1 {
-            font-size: 2.2em;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .logo h1 span {
-            color: var(--accent);
-            font-weight: 300;
-        }
-
-        .subtitle {
-            font-size: 1em;
-            color: rgba(255,255,255,0.8);
-            font-weight: 400;
-        }
-
-        /* ==================== MAIN CONTAINER ==================== */
-        .main-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-            flex: 1;
-            width: 100%;
-        }
-
-        /* ==================== CARDS ==================== */
+        .header-content { max-width: 1200px; margin: 0 auto; text-align: center; }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 0.5rem; }
+        .logo i { font-size: 2.2em; color: var(--accent); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        .logo h1 { font-size: 2em; font-weight: 700; letter-spacing: -0.5px; }
+        .logo h1 span { color: var(--accent); font-weight: 300; }
+        .subtitle { font-size: 0.9em; color: rgba(255,255,255,0.8); }
+        .main-container { max-width: 1200px; margin: 1.5rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
         .card {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-            transition: var(--transition);
-            border: 1px solid var(--gray-200);
+            background: var(--white); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); margin-bottom: 1.2rem; overflow: hidden;
+            transition: var(--transition); border: 1px solid var(--gray-200);
         }
-
-        .card:hover {
-            box-shadow: var(--shadow-md);
-            border-color: var(--gray-300);
-        }
-
+        .card:hover { box-shadow: var(--shadow-md); }
         .card-header {
-            background: var(--gray-50);
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            border-bottom: 2px solid var(--gray-200);
+            background: var(--gray-50); padding: 0.8rem 1.2rem; display: flex;
+            align-items: center; gap: 0.75rem; border-bottom: 2px solid var(--gray-200);
+            cursor: pointer; user-select: none;
         }
-
-        .card-header i {
-            font-size: 1.3em;
-            color: var(--primary);
-        }
-
-        .card-header h2 {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: var(--secondary);
-            flex: 1;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        /* ==================== INSTRUCTION CARDS ==================== */
-        .instructions-card .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-
+        .card-header i { font-size: 1.2em; color: var(--primary); }
+        .card-header h2 { font-size: 1.05em; font-weight: 600; color: var(--secondary); flex: 1; }
+        .card-header .collapse-icon { transition: transform 0.3s; }
+        .card-body { padding: 1.2rem; display: none; }
+        .card.expanded .card-body { display: block; }
+        .card.expanded .collapse-icon { transform: rotate(90deg); }
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         .step-item {
-            text-align: center;
-            padding: 1.5rem;
-            background: var(--gray-50);
-            border-radius: var(--radius-md);
-            position: relative;
-            transition: var(--transition);
-            border: 1px solid var(--gray-200);
+            text-align: center; padding: 1.5rem; background: var(--gray-50);
+            border-radius: var(--radius-md); transition: var(--transition); border: 1px solid var(--gray-200);
         }
-
-        .step-item:hover {
-            background: var(--white);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .step-number {
-            background: var(--primary);
-            color: var(--white);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            margin: 0 auto 0.75rem;
-            font-size: 1.1em;
-        }
-
-        .step-item i {
-            font-size: 2em;
-            color: var(--accent);
-            margin-bottom: 0.75rem;
-        }
-
-        .step-item p {
-            color: var(--gray-600);
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-
-        /* ==================== UPLOAD CARDS ==================== */
+        .step-item:hover { background: var(--white); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .step-number { background: var(--primary); color: var(--white); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 0.75rem; font-size: 1.1em; }
+        .step-item i { font-size: 2em; color: var(--accent); margin-bottom: 0.75rem; }
+        .step-item p { color: var(--gray-600); font-size: 0.9em; line-height: 1.4; }
         .upload-card .upload-area {
-            border: 3px dashed var(--gray-300);
-            border-radius: var(--radius-md);
-            padding: 2.5rem 2rem;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
-            background: var(--gray-50);
+            border: 3px dashed var(--gray-300); border-radius: var(--radius-md);
+            padding: 2rem 1.5rem; cursor: pointer; transition: var(--transition);
+            text-align: center; background: var(--gray-50);
         }
-
-        .upload-card .upload-area:hover {
-            border-color: var(--accent);
-            background: #fef9f3;
-            transform: translateY(-1px);
-        }
-
-        .upload-card .upload-area.dragover {
-            border-color: var(--accent);
-            background: #fef5eb;
-            box-shadow: 0 0 0 4px rgba(230,126,34,0.1);
-        }
-
-        .upload-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .upload-icon {
-            font-size: 3.5em;
-            color: var(--accent);
-            margin-bottom: 0.25rem;
-        }
-
-        .upload-text {
-            font-size: 1.15em;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-
-        .upload-subtext {
-            font-size: 0.9em;
-            color: var(--gray-500);
-        }
-
+        .upload-card .upload-area:hover { border-color: var(--accent); background: #fef9f3; }
+        .upload-card .upload-area.dragover { border-color: var(--accent); background: #fef5eb; box-shadow: 0 0 0 4px rgba(230,126,34,0.1); }
+        .upload-content { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .upload-icon { font-size: 3em; color: var(--accent); }
+        .upload-text { font-size: 1.1em; font-weight: 600; color: var(--secondary); }
+        .upload-subtext { font-size: 0.85em; color: var(--gray-500); }
         .btn {
-            padding: 0.6em 1.5em;
-            border-radius: 25px;
-            border: none;
-            font-size: 0.95em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5em;
-            text-decoration: none;
+            padding: 0.5em 1.2em; border-radius: 20px; border: none; font-size: 0.9em;
+            font-weight: 600; cursor: pointer; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 0.4em;
         }
-
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: var(--white);
-        }
-
-        .btn-success:hover {
-            background: #219a52;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-lg {
-            padding: 1em 2.5em;
-            font-size: 1.1em;
-            border-radius: 30px;
-        }
-
-        .btn-block {
-            display: block;
-            width: 100%;
-            text-align: center;
-            justify-content: center;
-        }
-
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-success:hover { background: #219a52; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn-sm { padding: 0.3em 0.7em; font-size: 0.8em; }
+        .btn-lg { padding: 0.8em 2em; font-size: 1em; border-radius: 25px; }
+        .btn-block { display: block; width: 100%; text-align: center; justify-content: center; }
         .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            padding: 0.5rem 0.75rem;
-            background: var(--gray-50);
-            border-radius: var(--radius-sm);
-            font-size: 0.85em;
-            border: 1px solid var(--gray-200);
+            display: flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem;
+            padding: 0.4rem 0.6rem; background: var(--gray-50); border-radius: var(--radius-sm);
+            font-size: 0.85em; border: 1px solid var(--gray-200);
         }
-
-        .status-icon {
-            font-size: 0.6em;
-            color: var(--gray-400);
-        }
-
+        .status-icon { font-size: 0.6em; color: var(--gray-400); }
         .status-indicator.success .status-icon { color: var(--success); }
-        .status-indicator.error .status-icon { color: var(--danger); }
-
-        .status-text {
-            color: var(--gray-600);
-        }
-
-        /* ==================== BADGES ==================== */
-        .badge {
-            padding: 0.35em 0.75em;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-
-        .badge-info {
-            background: var(--info);
-            color: var(--white);
-        }
-
-        /* ==================== SUMMARY CARDS ==================== */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
-        }
-
+        .status-text { color: var(--gray-600); }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; }
         .summary-card {
-            background: var(--gray-50);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            text-align: center;
-            box-shadow: none;
-            border: 1px solid var(--gray-200);
+            background: var(--gray-50); border-radius: var(--radius-md); padding: 1rem;
+            text-align: center; border: 1px solid var(--gray-200); transition: var(--transition);
+        }
+        .summary-card:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--white); }
+        .summary-value { font-size: 1.8em; font-weight: 700; color: var(--primary); }
+        .summary-label { font-size: 0.75em; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
+        .chart-container { position: relative; width: 100%; max-height: 350px; margin-bottom: 1.5rem; }
+        .chart-container canvas { width: 100% !important; height: 100% !important; }
+        .chart-download-btn {
+            background: none; border: 1px solid var(--gray-300); color: var(--gray-600);
+            padding: 0.25em 0.6em; border-radius: 5px; cursor: pointer; font-size: 0.8em;
             transition: var(--transition);
         }
-
-        .summary-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-            border-color: var(--accent);
-            background: var(--white);
-        }
-
-        .summary-value {
-            font-size: 2.2em;
-            font-weight: 700;
-            color: var(--primary);
-            line-height: 1.1;
-        }
-
-        .summary-label {
-            font-size: 0.8em;
-            color: var(--gray-600);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 0.25rem;
-        }
-
-        /* ==================== CHARTS & TABLES ==================== */
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-height: 400px;
-            margin-bottom: 1.5rem;
-        }
-
-        .chart-container canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-
-        .stats-table th {
-            background: var(--gray-50);
-            color: var(--secondary);
-            padding: 0.6rem 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid var(--gray-300);
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .stats-table td {
-            padding: 0.5rem 0.75rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .stats-table tr:hover td {
-            background: #fef9f3;
-        }
-
-        .stats-table .num {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stats-table .pct {
-            text-align: right;
-            color: var(--accent);
-        }
-
+        .chart-download-btn:hover { background: var(--gray-100); border-color: var(--accent); color: var(--accent); }
+        .stats-table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        .stats-table th { background: var(--gray-50); color: var(--secondary); padding: 0.5rem 0.6rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--gray-300); font-size: 0.8em; text-transform: uppercase; }
+        .stats-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--gray-200); }
+        .stats-table tr:hover td { background: #fef9f3; }
+        .stats-table .num { text-align: right; }
+        .stats-table .pct { text-align: right; color: var(--accent); }
         .toggle-btn {
-            background: var(--gray-200);
-            border: 1px solid var(--gray-300);
-            padding: 0.3em 0.75em;
-            border-radius: 15px;
-            font-size: 0.8em;
-            cursor: pointer;
-            color: var(--secondary);
-            font-weight: 600;
-            transition: var(--transition);
+            background: var(--gray-200); border: 1px solid var(--gray-300); padding: 0.25em 0.6em;
+            border-radius: 12px; font-size: 0.8em; cursor: pointer; color: var(--secondary);
+            font-weight: 600; transition: var(--transition);
         }
-
-        .toggle-btn:hover {
-            background: var(--gray-300);
-            border-color: var(--gray-400);
-        }
-
+        .toggle-btn:hover { background: var(--gray-300); }
         .info-note {
-            background: #fef9f3;
-            border-left: 4px solid var(--accent);
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.85em;
-            color: var(--secondary);
-            border-radius: var(--radius-sm);
+            background: #fef9f3; border-left: 4px solid var(--accent); padding: 0.6rem 0.8rem;
+            margin-bottom: 1rem; font-size: 0.85em; color: var(--secondary); border-radius: var(--radius-sm);
         }
-
-        /* ==================== SPINNER ==================== */
-        .spinner-overlay {
-            display: none;
-            text-align: center;
-            padding: 2rem;
+        .explanation-box {
+            background: #f0f7ff; border-left: 4px solid var(--info); padding: 0.6rem 0.8rem;
+            margin-bottom: 1rem; border-radius: var(--radius-sm); font-size: 0.85em; color: var(--secondary);
         }
-
-        .spinner-overlay.active {
-            display: block;
-        }
-
-        .spinner-icon {
-            font-size: 2.5em;
-            color: var(--accent);
-            animation: spin 1.2s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .spinner-text {
-            color: var(--gray-600);
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
-
-        /* ==================== ERROR MESSAGE ==================== */
-        .alert {
-            padding: 1rem 1.25rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 1.5rem;
-            display: none;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 500;
-        }
-
-        .alert-danger {
-            background: #fdeaea;
-            color: var(--danger);
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert i {
-            font-size: 1.2em;
-        }
-
-        /* ==================== FOOTER ==================== */
+        .spinner-overlay { display: none; text-align: center; padding: 1.5rem; }
+        .spinner-overlay.active { display: block; }
+        .spinner-icon { font-size: 2.2em; color: var(--accent); animation: spin 1.2s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner-text { color: var(--gray-600); font-weight: 600; margin-top: 0.3rem; }
+        .alert { padding: 0.8rem 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; display: none; align-items: center; gap: 0.5rem; font-weight: 500; }
+        .alert-danger { background: #fdeaea; color: var(--danger); border: 1px solid #f5c6cb; }
         .app-footer {
-            background: var(--secondary);
-            color: var(--white);
-            padding: 2rem 1.5rem 1rem;
-            margin-top: auto;
+            background: var(--secondary); color: var(--white); padding: 1.5rem 1rem 0.8rem; margin-top: auto;
         }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-        }
-
-        .footer-section h3 {
-            font-size: 1.1em;
-            margin-bottom: 0.75rem;
-            color: var(--accent);
-        }
-
-        .footer-section p {
-            font-size: 0.85em;
-            color: rgba(255,255,255,0.7);
-            line-height: 1.6;
-        }
-
-        .footer-bottom {
-            max-width: 1200px;
-            margin: 1.5rem auto 0;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-            font-size: 0.8em;
-            color: rgba(255,255,255,0.5);
-        }
-
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .footer-section h3 { font-size: 1em; margin-bottom: 0.5rem; color: var(--accent); }
+        .footer-section p { font-size: 0.8em; color: rgba(255,255,255,0.7); line-height: 1.5; }
+        .footer-bottom { max-width: 1200px; margin: 1rem auto 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 0.75em; color: rgba(255,255,255,0.5); }
+        #mapContainer { height: 400px; border-radius: var(--radius-md); }
+        .map-controls { margin-top: 0.5rem; display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.85em; }
+        .heat-settings { display: flex; align-items: center; gap: 0.5rem; }
+        .heat-settings label { font-size: 0.8em; color: var(--gray-600); }
+        .heat-settings input[type="range"] { width: 80px; }
+        .hidden { display: none !important; }
+        .collapse-all-btns { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
         @media (max-width: 768px) {
-            .instructions-card .steps-grid {
-                grid-template-columns: 1fr;
-            }
-            .footer-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .hidden {
-            display: none !important;
+            .steps-grid { grid-template-columns: 1fr; }
+            .footer-content { grid-template-columns: 1fr; text-align: center; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-chart-bar"></i>
-                <h1>Análise<span>Botânica</span></h1>
-            </div>
-            <p class="subtitle">Estatísticas de Coleções • Formato JABOT • Taxonomia, Hábito & Herbário de Origem</p>
-        </div>
-    </header>
-
-    <!-- Container Principal -->
-    <main class="main-container">
-        <!-- Card de Instruções -->
-        <div class="card instructions-card">
-            <div class="card-header">
-                <i class="fas fa-info-circle"></i>
-                <h2>Instruções</h2>
-            </div>
-            <div class="card-body">
-                <div class="steps-grid">
-                    <div class="step-item">
-                        <div class="step-number">1</div>
-                        <i class="fas fa-file-excel"></i>
-                        <p>Carregue sua planilha do JABOT (.xlsx)</p>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">2</div>
-                        <i class="fas fa-chart-pie"></i>
-                        <p>Visualize gráficos e estatísticas</p>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">3</div>
-                        <i class="fas fa-download"></i>
-                        <p>Exporte os resultados em .xlsx</p>
-                    </div>
-                </div>
+<header class="app-header">
+    <div class="header-content">
+        <div class="logo"><i class="fas fa-chart-bar"></i><h1>Análise<span>Botânica</span></h1></div>
+        <p class="subtitle">Estatísticas de Coleções • Formato JABOT</p>
+    </div>
+</header>
+<main class="main-container">
+    <div class="card instructions-card">
+        <div class="card-header"><i class="fas fa-info-circle"></i><h2>Instruções</h2></div>
+        <div class="card-body" style="display:block;">
+            <div class="steps-grid">
+                <div class="step-item"><div class="step-number">1</div><i class="fas fa-file-excel"></i><p>Carregue sua planilha do JABOT (.xlsx)</p></div>
+                <div class="step-item"><div class="step-number">2</div><i class="fas fa-chart-pie"></i><p>Expanda as seções de interesse</p></div>
+                <div class="step-item"><div class="step-number">3</div><i class="fas fa-download"></i><p>Exporte os resultados em .xlsx</p></div>
             </div>
         </div>
-
-        <!-- Alerta de Erro -->
-        <div class="alert alert-danger" id="errorMsg">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span id="errorText"></span>
+    </div>
+    <div class="alert alert-danger" id="errorMsg"><i class="fas fa-exclamation-triangle"></i><span id="errorText"></span></div>
+    <div class="card upload-card">
+        <div class="card-header"><i class="fas fa-file-excel"></i><h2>Planilha de Dados - JABOT</h2></div>
+        <div class="card-body" style="display:block;">
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                <div class="upload-content">
+                    <i class="fas fa-table upload-icon"></i>
+                    <p class="upload-text">Selecionar planilha</p>
+                    <p class="upload-subtext">Formatos .xls ou .xlsx</p>
+                    <button class="btn btn-primary" type="button" onclick="document.getElementById('fileInput').click()"><i class="fas fa-folder-open"></i> Selecionar Arquivo</button>
+                </div>
+            </div>
+            <div class="status-indicator" id="statusPlanilha"><span class="status-icon"><i class="fas fa-circle"></i></span><span class="status-text" id="statusText">Nenhuma planilha selecionada</span></div>
         </div>
-
-        <!-- Card de Upload -->
-        <div class="card upload-card">
-            <div class="card-header">
-                <i class="fas fa-file-excel"></i>
-                <h2>Planilha de Dados - JABOT</h2>
-            </div>
-            <div class="card-body">
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
-                    <div class="upload-content">
-                        <i class="fas fa-table upload-icon"></i>
-                        <p class="upload-text">Selecionar planilha</p>
-                        <p class="upload-subtext">Formatos .xls ou .xlsx • Colunas no formato JABOT</p>
-                        <button class="btn btn-primary" type="button" onclick="document.getElementById('fileInput').click()">
-                            <i class="fas fa-folder-open"></i> Selecionar Arquivo
-                        </button>
-                    </div>
-                </div>
-                <div class="status-indicator" id="statusPlanilha">
-                    <span class="status-icon"><i class="fas fa-circle"></i></span>
-                    <span class="status-text" id="statusText">Nenhuma planilha selecionada</span>
-                </div>
-            </div>
+    </div>
+    <div class="spinner-overlay" id="spinnerOverlay"><i class="fas fa-spinner spinner-icon"></i><p class="spinner-text">Processando dados...</p></div>
+    <div id="resultsContainer" class="hidden">
+        <div class="collapse-all-btns">
+            <button class="btn btn-sm btn-primary" onclick="toggleAllCards(true)"><i class="fas fa-expand-alt"></i> Expandir todos</button>
+            <button class="btn btn-sm btn-primary" onclick="toggleAllCards(false)"><i class="fas fa-compress-alt"></i> Colapsar todos</button>
         </div>
-
-        <!-- Spinner -->
-        <div class="spinner-overlay" id="spinnerOverlay">
-            <i class="fas fa-spinner spinner-icon"></i>
-            <p class="spinner-text">Processando dados...</p>
-        </div>
-
-        <!-- Resultados -->
-        <div id="resultsContainer" class="hidden">
-            <!-- Cards de Resumo -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <h2>Resumo da Coleção</h2>
-                </div>
-                <div class="card-body">
-                    <div class="summary-grid" id="summaryCards"></div>
-                </div>
+        <div class="card expanded" id="cardResumo"><div class="card-header" onclick="toggleCard('cardResumo')"><i class="fas fa-tachometer-alt"></i><h2>Resumo da Coleção</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="summary-grid" id="summaryCards"></div></div></div>
+        <div class="info-note">⚠️ <strong>Nota:</strong> A riqueza de espécies é calculada por binômio (gênero + epíteto) para evitar duplicações por variação de autoria.</div>
+        <div class="card" id="cardTaxonomia"><div class="card-header" onclick="toggleCard('cardTaxonomia')"><i class="fas fa-dna"></i><h2>Taxonomia</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body" id="taxonomiaContent"></div></div>
+        <div class="card" id="cardRaridade"><div class="card-header" onclick="toggleCard('cardRaridade')"><i class="fas fa-gem"></i><h2>Raridade</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>O que mostra:</strong> Quantas espécies aparecem com apenas 1 registro, 2 registros, etc. Uma cauda longa indica muitos táxons raros.</div><div class="chart-container" id="raridadeContainer"><canvas id="raridadeChart"></canvas></div><div id="raridadeTable"></div></div></div>
+        <div class="card" id="cardEsforco"><div class="card-header" onclick="toggleCard('cardEsforco')"><i class="fas fa-calendar-alt"></i><h2>Esforço Amostral Temporal</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Coletas por ano:</strong> intensidade de coletas.<br><strong>Coletas por mês:</strong> sazonalidade.<br><strong>Curva de acumulação de espécies:</strong> saturação da amostragem.</div><div class="chart-container" id="coletasAnoContainer"><canvas id="coletasAnoChart"></canvas></div><div class="chart-container" id="coletasMesContainer"><canvas id="coletasMesChart"></canvas></div><div class="chart-container" id="curvaAcumulacaoContainer"><canvas id="curvaAcumulacaoChart"></canvas></div></div></div>
+        <div class="card" id="cardEspacial"><div class="card-header" onclick="toggleCard('cardEspacial')"><i class="fas fa-map-marker-alt"></i><h2>Distribuição Espacial</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Municípios/localidades mais amostrados</strong> e mapa interativo com opção de calor (kernel).</div><div class="chart-container" id="municipioContainer"><canvas id="municipioChart"></canvas></div><div class="chart-container" id="localidadeContainer"><canvas id="localidadeChart"></canvas></div><div id="mapContainer"></div><div class="map-controls">
+            <label><input type="checkbox" id="heatmapToggle"> Mapa de calor (Kernel)</label>
+            <div id="heatSettings" class="heat-settings hidden">
+                <label>Raio: <input type="range" id="heatRadius" min="5" max="50" value="20" step="1"> <span id="radiusVal">20</span></label>
+                <label>Suavização: <input type="range" id="heatBlur" min="5" max="30" value="15" step="1"> <span id="blurVal">15</span></label>
             </div>
+            <button class="btn btn-sm btn-primary" onclick="downloadMap()"><i class="fas fa-download"></i> Mapa PNG</button>
+        </div></div></div>
+        <div class="card" id="cardCompletude"><div class="card-header" onclick="toggleCard('cardCompletude')"><i class="fas fa-check-circle"></i><h2>Completude dos Dados</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>% com coordenadas, data completa e determinador.</strong></div><div class="chart-container" id="completudeContainer"><canvas id="completudeChart"></canvas></div><div id="completudeTable"></div></div></div>
+        <div class="card" id="cardComparacao"><div class="card-header" onclick="toggleCard('cardComparacao')"><i class="fas fa-balance-scale"></i><h2>Comparação entre Áreas (majorarea)</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Total de registros e espécies por município/região.</strong></div><div id="comparacaoContent"></div></div></div>
+        <div class="card" id="cardHabito"><div class="card-header" onclick="toggleCard('cardHabito')"><i class="fas fa-seedling"></i><h2>Hábito de Crescimento</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Formas de vida.</strong></div><div class="chart-container" id="habitoContainer"><canvas id="habitoChart"></canvas></div><button class="toggle-btn" onclick="toggleChartTable('habitoChart','habitoTable')">Alternar</button><div id="habitoTable" class="hidden"></div></div></div>
+        <div class="card" id="cardOrigem"><div class="card-header" onclick="toggleCard('cardOrigem')"><i class="fas fa-landmark"></i><h2>Herbário de Origem</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Registros e espécies por sigla.</strong></div><div class="chart-container" id="origemContainer"><canvas id="origemChart"></canvas></div><button class="toggle-btn" onclick="toggleChartTable('origemChart','origemTable')">Alternar</button><div id="origemTable" class="hidden"></div></div></div>
+    </div>
+    <button id="downloadBtn" class="btn btn-success btn-lg btn-block hidden"><i class="fas fa-file-excel"></i> Baixar Estatísticas em .xlsx</button>
+</main>
+<footer class="app-footer">
+    <div class="footer-content">
+        <div class="footer-section"><h3>Análise Botânica JABOT</h3><p>Ferramenta para análise exploratória de dados de coleções botânicas no formato JABOT</p></div>
+        <div class="footer-section"><h3>Funcionalidades</h3><p>Taxonomia • Hábito • Herbário de Origem • Raridade • Esforço amostral • Espacial • Completude</p></div>
+        <div class="footer-section"><h3>Contato</h3><p><i class="fab fa-github"></i> github.com/marlonroyer</p>
+	<p>Desenvolvido por Marlon Royer de Morais</p>
+	<p>Versão 2.0 (fase experimental)</p>
+</div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 Análise Botânica • Desenvolvido para processamento de dados do JABOT de uso interno do Herbário EVB</p></div>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let dadosProcessados = null;
+let estatisticas = null;
+let charts = {};
+let mapInstance = null;
+let heatLayer = null;
+let currentMarkers = [];
 
-            <!-- Nota sobre contagem -->
-            <div class="info-note">
-                ⚠️ <strong>Nota sobre contagem de espécies:</strong> Para evitar duplicações por variações de autoria (ex: <em>Á. Löve & D. Löve</em> vs. <em>Á.Löve & D.Löve</em>) e sinônimos aceitos sob o mesmo binômio, a riqueza é calculada apenas pelo par <strong>Gênero + epíteto específico</strong>, ignorando o autor. Isso reflete melhor a diversidade de espécies.
-            </div>
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const statusPlanilha = document.getElementById('statusPlanilha');
+const statusText = document.getElementById('statusText');
+const spinnerOverlay = document.getElementById('spinnerOverlay');
+const errorMsg = document.getElementById('errorMsg');
+const errorText = document.getElementById('errorText');
+const resultsContainer = document.getElementById('resultsContainer');
+const summaryCards = document.getElementById('summaryCards');
+const downloadBtn = document.getElementById('downloadBtn');
+const heatmapToggle = document.getElementById('heatmapToggle');
+const heatSettings = document.getElementById('heatSettings');
+const heatRadius = document.getElementById('heatRadius');
+const heatBlur = document.getElementById('heatBlur');
+const radiusVal = document.getElementById('radiusVal');
+const blurVal = document.getElementById('blurVal');
 
-            <!-- Taxonomia -->
-            <div class="card" id="sectionTaxonomia">
-                <div class="card-header">
-                    <i class="fas fa-dna"></i>
-                    <h2>Taxonomia</h2>
-                </div>
-                <div class="card-body" id="taxonomiaContent"></div>
-            </div>
+uploadArea.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', handleFileSelect);
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFileSelect(); }
+});
+downloadBtn.addEventListener('click', exportarXLSX);
 
-            <!-- Hábito -->
-            <div class="card" id="sectionHabito">
-                <div class="card-header">
-                    <i class="fas fa-seedling"></i>
-                    <h2>Hábito de Crescimento</h2>
-                    <button class="toggle-btn" onclick="toggleChartTable('habitoChart', 'habitoTable')">
-                        <i class="fas fa-exchange-alt"></i> Alternar visualização
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container"><canvas id="habitoChart"></canvas></div>
-                    <div id="habitoTable" class="hidden"></div>
-                </div>
-            </div>
+heatRadius.addEventListener('input', () => {
+    radiusVal.textContent = heatRadius.value;
+    if (heatLayer) heatLayer.setOptions({ radius: parseInt(heatRadius.value) });
+});
+heatBlur.addEventListener('input', () => {
+    blurVal.textContent = heatBlur.value;
+    if (heatLayer) heatLayer.setOptions({ blur: parseInt(heatBlur.value) });
+});
 
-            <!-- Herbário de Origem -->
-            <div class="card" id="sectionOrigem">
-                <div class="card-header">
-                    <i class="fas fa-landmark"></i>
-                    <h2>Herbário de Origem (sigla_colbot_origem)</h2>
-                    <button class="toggle-btn" onclick="toggleChartTable('origemChart', 'origemTable')">
-                        <i class="fas fa-exchange-alt"></i> Alternar visualização
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container"><canvas id="origemChart"></canvas></div>
-                    <div id="origemTable" class="hidden"></div>
-                </div>
-            </div>
-        </div>
+function toggleCard(cardId) {
+    const card = document.getElementById(cardId);
+    card.classList.toggle('expanded');
+    if (cardId === 'cardEspacial' && card.classList.contains('expanded') && mapInstance) {
+        setTimeout(() => mapInstance.invalidateSize(), 100);
+    }
+}
+function toggleAllCards(expand) {
+    document.querySelectorAll('.card[id^="card"]').forEach(card => {
+        if (expand) card.classList.add('expanded');
+        else card.classList.remove('expanded');
+    });
+    if (expand && mapInstance) setTimeout(() => mapInstance.invalidateSize(), 100);
+}
 
-        <!-- Botão Download -->
-        <button id="downloadBtn" class="btn btn-success btn-lg btn-block hidden">
-            <i class="fas fa-file-excel"></i> Baixar Estatísticas em .xlsx
-        </button>
-    </main>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Análise Botânica</h3>
-                <p>Ferramenta para análise exploratória de dados de coleções botânicas no formato JABOT</p>
-            </div>
-            <div class="footer-section">
-                <h3>Funcionalidades</h3>
-                <p>Taxonomia • Hábito • Herbário de Origem</p>
-                <p>Gráficos interativos • Exportação .xlsx</p>
-                <p>Contagem por binômio (sem autor)</p>
-            </div>
-            <div class="footer-section">
-                <h3>Contato</h3>
-                <p><i class="fab fa-github"></i> github.com/marlonroyer</p>
-		<p>Desenvolvido por Marlon Royer de Morais</p>
-		<p>Versão 1.0 (fase experimental)</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Análise Botânica • Desenvolvido para processamento de dados do JABOT de uso interno do Herbário EVB</p>
-        </div>
-    </footer>
-
-    <!-- Bibliotecas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-
-    <!-- Script Principal -->
-    <script>
-        let dadosProcessados = null;
-        let estatisticas = null;
-        let charts = {};
-
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const statusPlanilha = document.getElementById('statusPlanilha');
-        const statusText = document.getElementById('statusText');
-        const spinnerOverlay = document.getElementById('spinnerOverlay');
-        const errorMsg = document.getElementById('errorMsg');
-        const errorText = document.getElementById('errorText');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const summaryCards = document.getElementById('summaryCards');
-        const sectionTaxonomia = document.getElementById('sectionTaxonomia');
-        const sectionHabito = document.getElementById('sectionHabito');
-        const sectionOrigem = document.getElementById('sectionOrigem');
-        const taxonomiaContent = document.getElementById('taxonomiaContent');
-        const downloadBtn = document.getElementById('downloadBtn');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFileSelect);
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileSelect();
-            }
-        });
-        downloadBtn.addEventListener('click', exportarXLSX);
-
-        function handleFileSelect() {
-            const file = fileInput.files[0];
-            if (!file) return;
-
-            errorMsg.style.display = 'none';
-            resultsContainer.classList.add('hidden');
-            downloadBtn.classList.add('hidden');
-            destruirGraficos();
-
-            if (!file.name.match(/\.xlsx?$/i)) {
-                mostrarErro('Por favor, selecione um arquivo .xlsx ou .xls');
-                return;
-            }
-
-            statusPlanilha.classList.remove('success', 'error');
-            statusPlanilha.classList.add('success');
-            statusText.textContent = '📄 ' + file.name;
-            spinnerOverlay.classList.add('active');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const primeiraAba = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[primeiraAba];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '', raw: true });
-
-                    if (jsonData.length === 0) throw new Error('A planilha está vazia.');
-
-                    const primeiraLinha = jsonData[0];
-                    const colunasArquivo = Object.keys(primeiraLinha).map(c => c.toLowerCase().trim());
-
-                    const faltantes = [];
-                    ['family', 'genus', 'habito', 'sigla_colbot_origem'].forEach(col => {
-                        if (!colunasArquivo.includes(col)) faltantes.push(col);
-                    });
-
-                    if (faltantes.length > 0) {
-                        throw new Error('Colunas obrigatórias não encontradas: ' + faltantes.join(', ') +
-                            '\n\nColunas detectadas: ' + colunasArquivo.join(', '));
-                    }
-
-                    const dados = jsonData.map(row => {
-                        const novo = {};
-                        for (const [key, value] of Object.entries(row)) {
-                            novo[key.toLowerCase().trim()] = value;
-                        }
-                        return novo;
-                    });
-
-                    dadosProcessados = dados;
-                    processarEstatisticas(dados);
-
-                    spinnerOverlay.classList.remove('active');
-                    resultsContainer.classList.remove('hidden');
-                    downloadBtn.classList.remove('hidden');
-                    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                } catch (err) {
-                    spinnerOverlay.classList.remove('active');
-                    statusPlanilha.classList.remove('success');
-                    statusPlanilha.classList.add('error');
-                    statusText.textContent = 'Erro ao processar arquivo';
-                    mostrarErro('Erro: ' + err.message);
-                }
-            };
-            reader.onerror = function() {
-                spinnerOverlay.classList.remove('active');
-                mostrarErro('Erro ao ler o arquivo.');
-            };
-            reader.readAsArrayBuffer(file);
+function handleFileSelect() {
+    const file = fileInput.files[0];
+    if (!file) return;
+    errorMsg.style.display = 'none';
+    resultsContainer.classList.add('hidden');
+    downloadBtn.classList.add('hidden');
+    destruirGraficos();
+    if (!file.name.match(/\.xlsx?$/i)) { mostrarErro('Selecione .xlsx ou .xls'); return; }
+    statusPlanilha.classList.remove('success','error');
+    statusPlanilha.classList.add('success');
+    statusText.textContent = '📄 ' + file.name;
+    spinnerOverlay.classList.add('active');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:'array'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(ws, {defval:'', raw:true});
+            if (!json.length) throw new Error('Planilha vazia.');
+            const cols = Object.keys(json[0]).map(c=>c.toLowerCase().trim());
+            const obrigatorias = ['family','genus','habito','sigla_colbot_origem'];
+            const falt = obrigatorias.filter(c=>!cols.includes(c));
+            if (falt.length) throw new Error('Colunas obrigatórias faltando: '+falt.join(', ')+'\nDetectadas: '+cols.join(', '));
+            const dados = json.map(row => { const novo={}; for(const[k,v]of Object.entries(row)) novo[k.toLowerCase().trim()]=v; return novo; });
+            dadosProcessados = dados;
+            processarEstatisticas(dados);
+            spinnerOverlay.classList.remove('active');
+            resultsContainer.classList.remove('hidden');
+            downloadBtn.classList.remove('hidden');
+            document.querySelectorAll('.card[id^="card"]').forEach(c => c.classList.remove('expanded'));
+            document.getElementById('cardResumo').classList.add('expanded');
+            resultsContainer.scrollIntoView({behavior:'smooth',block:'start'});
+        } catch(err) {
+            spinnerOverlay.classList.remove('active');
+            statusPlanilha.classList.add('error');
+            statusText.textContent = 'Erro ao processar';
+            mostrarErro(err.message);
         }
+    };
+    reader.onerror = ()=> { spinnerOverlay.classList.remove('active'); mostrarErro('Erro ao ler arquivo.'); };
+    reader.readAsArrayBuffer(file);
+}
 
-        function processarEstatisticas(dados) {
-            const total = dados.length;
+function processarEstatisticas(dados) {
+    const total = dados.length;
+    const famCount = {}; dados.forEach(d=>{ const f=(d.family||'').trim(); if(f) famCount[f]=(famCount[f]||0)+1; });
+    const famArray = Object.entries(famCount).sort((a,b)=>b[1]-a[1]);
+    const genCount = {}; dados.forEach(d=>{ const g=(d.genus||'').trim(); if(g) genCount[g]=(genCount[g]||0)+1; });
+    const genArray = Object.entries(genCount).sort((a,b)=>b[1]-a[1]);
+    const spCount = {}; dados.forEach(d=>{ const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s) spCount[g+' '+s]=(spCount[g+' '+s]||0)+1; });
+    const spArray = Object.entries(spCount).sort((a,b)=>b[1]-a[1]);
+    let idSp=0,idGen=0,idFam=0,comCF=0;
+    dados.forEach(d=>{ const g=(d.genus||'').trim(), s=(d.sp1||'').trim(), f=(d.family||'').trim(), cf=(d.cf||'').trim(); if(g&&s)idSp++; else if(g)idGen++; else if(f)idFam++; if(/^(cf|1|yes|sim)$/i.test(cf))comCF++; });
+    const habCount = {}; dados.forEach(d=>{ const h=(d.habito||'').trim()||'(não informado)'; habCount[h]=(habCount[h]||0)+1; });
+    const habArray = Object.entries(habCount).sort((a,b)=>b[1]-a[1]);
+    const siglaCount = {}, siglaSpSet = {};
+    dados.forEach(d=>{ const sig=(d.sigla_colbot_origem||'').trim()||'(não informado)'; siglaCount[sig]=(siglaCount[sig]||0)+1; if(!siglaSpSet[sig])siglaSpSet[sig]=new Set(); const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s)siglaSpSet[sig].add(g+' '+s); });
+    const siglaArray = Object.entries(siglaCount).map(([sig,c])=>[sig,c,siglaSpSet[sig]?siglaSpSet[sig].size:0]).sort((a,b)=>b[1]-a[1]);
+    const raridadeMap = {}; spArray.forEach(([_,c])=>{ raridadeMap[c]=(raridadeMap[c]||0)+1; });
+    const raridadeArray = Object.entries(raridadeMap).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
+    const anoCount = {}, mesCount = {};
+    dados.forEach(d=>{ const y=parseInt(d.collyy); if(y) anoCount[y]=(anoCount[y]||0)+1; const m=parseInt(d.collmm); if(m) mesCount[m]=(mesCount[m]||0)+1; });
+    const anoArray = Object.entries(anoCount).sort((a,b)=>a[0]-b[0]);
+    const mesArray = Object.entries(mesCount).sort((a,b)=>a[0]-b[0]);
+    const comData = dados.filter(d=>d.collyy!==''&&d.collmm!==''&&d.colldd!=='');
+    comData.sort((a,b)=>{ const da=new Date(parseInt(a.collyy),parseInt(a.collmm)-1,parseInt(a.colldd)||1); const db=new Date(parseInt(b.collyy),parseInt(b.collmm)-1,parseInt(b.colldd)||1); return da-db; });
+    const especiesVistas = new Set(); const curva = [];
+    comData.forEach(d=>{ const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s) especiesVistas.add(g+' '+s); curva.push(especiesVistas.size); });
+    const municipioCount = {}, localidadeCount = {};
+    dados.forEach(d=>{ const m=(d.majorarea||'').trim(); if(m) municipioCount[m]=(municipioCount[m]||0)+1; const l=(d.gazetteer||'').trim(); if(l) localidadeCount[l]=(localidadeCount[l]||0)+1; });
+    const municipioArray = Object.entries(municipioCount).sort((a,b)=>b[1]-a[1]);
+    const localidadeArray = Object.entries(localidadeCount).sort((a,b)=>b[1]-a[1]);
+    const pontos = dados.filter(d=>d.latitude!==''&&d.longitude!=='').map(d=>({lat:parseFloat(d.latitude),lng:parseFloat(d.longitude),nome:(d.genus||'')+' '+(d.sp1||'')}));
+    let comCoord=0, comDataCompleta=0, comDet=0;
+    dados.forEach(d=>{ if(d.latitude!==''&&d.longitude!=='')comCoord++; if(d.colldd!==''&&d.collmm!==''&&d.collyy!=='')comDataCompleta++; if((d.detby||'').trim()!=='')comDet++; });
+    const areaStats = {};
+    dados.forEach(d=>{ const area=(d.majorarea||'').trim()||'Não informado'; if(!areaStats[area])areaStats[area]={total:0,spSet:new Set()}; areaStats[area].total++; const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s)areaStats[area].spSet.add(g+' '+s); });
+    const areaArray = Object.entries(areaStats).map(([a,o])=>[a,o.total,o.spSet.size]).sort((a,b)=>b[1]-a[1]);
+    estatisticas = { total, famArray, genArray, spArray, idSp, idGen, idFam, comCF, habArray, siglaArray, raridadeArray, anoArray, mesArray, curva, comData, municipioArray, localidadeArray, pontos, comCoord, comDataCompleta, comDet, areaArray };
+    renderizarCards(); renderizarTaxonomia(); renderizarRaridade(); renderizarEsforco(); renderizarEspacial(); renderizarCompletude(); renderizarComparacao(); renderizarHabito(); renderizarOrigem();
+}
 
-            const famCount = {};
-            dados.forEach(d => {
-                const fam = String(d.family || '').trim();
-                if (fam) famCount[fam] = (famCount[fam] || 0) + 1;
-            });
-            const famArray = Object.entries(famCount).sort((a, b) => b[1] - a[1]);
-            const totalFamilias = famArray.length;
-
-            const genCount = {};
-            dados.forEach(d => {
-                const gen = String(d.genus || '').trim();
-                if (gen) genCount[gen] = (genCount[gen] || 0) + 1;
-            });
-            const genArray = Object.entries(genCount).sort((a, b) => b[1] - a[1]);
-            const totalGeneros = genArray.length;
-
-            const spCount = {};
-            dados.forEach(d => {
-                const genus = String(d.genus || '').trim();
-                const sp1 = String(d.sp1 || '').trim();
-                if (genus && sp1) {
-                    const binomio = (genus + ' ' + sp1).trim();
-                    spCount[binomio] = (spCount[binomio] || 0) + 1;
-                }
-            });
-            const spArray = Object.entries(spCount).sort((a, b) => b[1] - a[1]);
-            const totalEspecies = spArray.length;
-
-            let identificadosEspecie = 0,
-                identificadosGenero = 0,
-                identificadosFamilia = 0,
-                comCF = 0;
-            dados.forEach(d => {
-                const genus = String(d.genus || '').trim();
-                const sp1 = String(d.sp1 || '').trim();
-                const family = String(d.family || '').trim();
-                const cf = String(d.cf || '').trim();
-                if (genus && sp1) identificadosEspecie++;
-                else if (genus && !sp1) identificadosGenero++;
-                else if (family) identificadosFamilia++;
-                if (cf.toLowerCase() === 'cf' || cf === '1' || cf === 'yes' || cf === 'sim') comCF++;
-            });
-
-            const habitoCount = {};
-            dados.forEach(d => {
-                const hab = String(d.habito || '').trim();
-                if (hab) habitoCount[hab] = (habitoCount[hab] || 0) + 1;
-                else habitoCount['(não informado)'] = (habitoCount['(não informado)'] || 0) + 1;
-            });
-            const habitoArray = Object.entries(habitoCount).sort((a, b) => b[1] - a[1]);
-
-            const siglaCount = {};
-            const siglaEspeciesSet = {};
-            dados.forEach(d => {
-                const sigla = String(d.sigla_colbot_origem || '').trim() || '(não informado)';
-                const genus = String(d.genus || '').trim();
-                const sp1 = String(d.sp1 || '').trim();
-                siglaCount[sigla] = (siglaCount[sigla] || 0) + 1;
-                if (!siglaEspeciesSet[sigla]) siglaEspeciesSet[sigla] = new Set();
-                if (genus && sp1) siglaEspeciesSet[sigla].add((genus + ' ' + sp1).trim());
-            });
-            const siglaArray = Object.entries(siglaCount).map(([sigla, count]) => {
-                return [sigla, count, siglaEspeciesSet[sigla] ? siglaEspeciesSet[sigla].size : 0];
-            }).sort((a, b) => b[1] - a[1]);
-            const totalSiglas = siglaArray.filter(s => s[0] !== '(não informado)').length;
-
-            estatisticas = {
-                total,
-                totalFamilias,
-                totalGeneros,
-                totalEspecies,
-                identificadosEspecie,
-                identificadosGenero,
-                identificadosFamilia,
-                comCF,
-                famArray,
-                genArray,
-                spArray,
-                habitoArray,
-                siglaArray,
-                totalSiglas
-            };
-
-            renderizarCards();
-            renderizarTaxonomia();
-            renderizarHabito();
-            renderizarOrigem();
-        }
-
-        function renderizarCards() {
-            const s = estatisticas;
-            summaryCards.innerHTML = `
-                <div class="summary-card">
-                    <div class="summary-value">${s.total.toLocaleString()}</div>
-                    <div class="summary-label">Total de Registros</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value">${s.totalFamilias.toLocaleString()}</div>
-                    <div class="summary-label">Famílias</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value">${s.totalGeneros.toLocaleString()}</div>
-                    <div class="summary-label">Gêneros</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value">${s.totalEspecies.toLocaleString()}</div>
-                    <div class="summary-label">Espécies (binômio)</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value">${s.totalSiglas.toLocaleString()}</div>
-                    <div class="summary-label">Herbários de Origem</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-value">${s.comCF.toLocaleString()}</div>
-                    <div class="summary-label">Com "cf"</div>
-                </div>
-            `;
-        }
-
-        function renderizarTaxonomia() {
-            sectionTaxonomia.classList.remove('hidden');
-            const s = estatisticas;
-
-            const pctEspecie = s.total > 0 ? ((s.identificadosEspecie / s.total) * 100).toFixed(1) : 0;
-            const pctGenero = s.total > 0 ? ((s.identificadosGenero / s.total) * 100).toFixed(1) : 0;
-            const pctFamilia = s.total > 0 ? ((s.identificadosFamilia / s.total) * 100).toFixed(1) : 0;
-            const pctCF = s.total > 0 ? ((s.comCF / s.total) * 100).toFixed(1) : 0;
-
-            let html = `
-                <p style="margin-bottom:1rem; color: var(--gray-600); font-size: 0.95em;">
-                    <strong>Nível de identificação:</strong> 
-                    ${s.identificadosEspecie} até espécie (${pctEspecie}%) · 
-                    ${s.identificadosGenero} até gênero (${pctGenero}%) · 
-                    ${s.identificadosFamilia} até família (${pctFamilia}%)<br>
-                    <strong>Registros com "cf" (conferir):</strong> ${s.comCF} (${pctCF}%)
-                </p>
-            `;
-
-            html += '<h3 style="color: var(--secondary); margin-top:1.5rem; margin-bottom:0.5rem;"><i class="fas fa-sitemap"></i> Top 10 Famílias</h3>';
-            html += '<div class="chart-container"><canvas id="famChart"></canvas></div>';
-            html += '<div id="famTable"></div>';
-
-            html += '<h3 style="color: var(--secondary); margin-top:1.5rem; margin-bottom:0.5rem;"><i class="fas fa-leaf"></i> Top 10 Gêneros</h3>';
-            html += '<div class="chart-container"><canvas id="genChart"></canvas></div>';
-            html += '<div id="genTable"></div>';
-
-            html += '<h3 style="color: var(--secondary); margin-top:1.5rem; margin-bottom:0.5rem;"><i class="fas fa-tree"></i> Top 10 Espécies (binômio)</h3>';
-            html += '<div class="chart-container"><canvas id="spChart"></canvas></div>';
-            html += '<div id="spTable"></div>';
-
-            taxonomiaContent.innerHTML = html;
-
-            criarGraficoBarras('famChart', s.famArray.slice(0, 10), 'Famílias');
-            criarTabela('famTable', s.famArray, s.total, 'Família');
-            criarGraficoBarras('genChart', s.genArray.slice(0, 10), 'Gêneros');
-            criarTabela('genTable', s.genArray, s.total, 'Gênero');
-            criarGraficoBarras('spChart', s.spArray.slice(0, 10), 'Espécies');
-            criarTabela('spTable', s.spArray, s.total, 'Espécie');
-        }
-
-        function renderizarHabito() {
-            sectionHabito.classList.remove('hidden');
-            criarGraficoPizza('habitoChart', estatisticas.habitoArray, 'Hábito');
-            criarTabela('habitoTable', estatisticas.habitoArray, estatisticas.total, 'Hábito');
-            document.getElementById('habitoChart').parentElement.style.display = 'block';
-            document.getElementById('habitoTable').classList.add('hidden');
-        }
-
-        function renderizarOrigem() {
-            sectionOrigem.classList.remove('hidden');
-            criarGraficoBarrasHorizontal('origemChart', estatisticas.siglaArray.slice(0, 15), 'Herbário de Origem');
-            criarTabelaOrigem('origemTable', estatisticas.siglaArray, estatisticas.total);
-            document.getElementById('origemChart').parentElement.style.display = 'block';
-            document.getElementById('origemTable').classList.add('hidden');
-        }
-
-        function destruirGraficos() {
-            Object.values(charts).forEach(chart => chart.destroy());
-            charts = {};
-        }
-
-        function criarGraficoBarras(canvasId, dadosArray, titulo) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (charts[canvasId]) charts[canvasId].destroy();
-
-            charts[canvasId] = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: dadosArray.map(d => d[0]),
-                    datasets: [{
-                        label: 'Registros',
-                        data: dadosArray.map(d => d[1]),
-                        backgroundColor: '#e67e22',
-                        borderColor: '#d35400',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, title: { display: true, text: 'Quantidade', color: '#607d8b' }, ticks: { color: '#607d8b' } },
-                        x: { ticks: { color: '#607d8b', maxRotation: 45, font: { size: 10 } } }
-                    }
-                }
-            });
-        }
-
-        function criarGraficoBarrasHorizontal(canvasId, dadosArray, titulo) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (charts[canvasId]) charts[canvasId].destroy();
-
-            charts[canvasId] = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: dadosArray.map(d => d[0]),
-                    datasets: [{
-                        label: 'Registros',
-                        data: dadosArray.map(d => d[1]),
-                        backgroundColor: '#f39c12',
-                        borderColor: '#d35400',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { beginAtZero: true, title: { display: true, text: 'Quantidade', color: '#607d8b' }, ticks: { color: '#607d8b' } },
-                        y: { ticks: { color: '#607d8b', font: { size: 10 } } }
-                    }
-                }
-            });
-        }
-
-        function criarGraficoPizza(canvasId, dadosArray, titulo) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (charts[canvasId]) charts[canvasId].destroy();
-
-            const cores = ['#1a5276', '#2980b9', '#2c6faa', '#3498db', '#5dade2',
-                '#e67e22', '#f39c12', '#d35400', '#f1c40f', '#e74c3c'
-            ];
-
-            charts[canvasId] = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: dadosArray.map(d => d[0]),
-                    datasets: [{
-                        data: dadosArray.map(d => d[1]),
-                        backgroundColor: cores.slice(0, dadosArray.length),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 }, color: '#607d8b' } }
-                    }
-                }
-            });
-        }
-
-        function criarTabela(divId, array, total, colunaNome) {
-            const div = document.getElementById(divId);
-            if (!div) return;
-            let html = `<table class="stats-table">
-                <thead><tr><th>${colunaNome}</th><th class="num">Contagem</th><th class="num">%</th></tr></thead><tbody>`;
-            array.forEach(([nome, count]) => {
-                const pct = ((count / total) * 100).toFixed(1);
-                html += `<tr><td>${escapeHTML(nome)}</td><td class="num">${count.toLocaleString()}</td><td class="pct">${pct}%</td></tr>`;
-            });
-            html += '</tbody></table>';
-            div.innerHTML = html;
-        }
-
-        function criarTabelaOrigem(divId, array, total) {
-            const div = document.getElementById(divId);
-            if (!div) return;
-            let html = `<table class="stats-table">
-                <thead><tr><th>Sigla</th><th class="num">Registros</th><th class="num">%</th><th class="num">Espécies dist.</th></tr></thead><tbody>`;
-            array.forEach(([sigla, count, espDist]) => {
-                const pct = ((count / total) * 100).toFixed(1);
-                html += `<tr><td><strong>${escapeHTML(sigla)}</strong></td><td class="num">${count.toLocaleString()}</td><td class="pct">${pct}%</td><td class="num">${espDist.toLocaleString()}</td></tr>`;
-            });
-            html += '</tbody></table>';
-            div.innerHTML = html;
-        }
-
-        function toggleChartTable(chartId, tableId) {
-            const chartCanvas = document.getElementById(chartId);
-            const tableDiv = document.getElementById(tableId);
-            if (!chartCanvas || !tableDiv) return;
-            const chartContainer = chartCanvas.parentElement;
-
-            if (chartContainer.style.display === 'none') {
-                chartContainer.style.display = 'block';
-                tableDiv.classList.add('hidden');
-            } else {
-                chartContainer.style.display = 'none';
-                tableDiv.classList.remove('hidden');
-            }
-        }
-
-        function exportarXLSX() {
-            if (!estatisticas) return;
-            const s = estatisticas;
-            const wb = XLSX.utils.book_new();
-
-            const resumoData = [
-                ['Métrica', 'Valor'],
-                ['Total de registros', s.total],
-                ['Total de famílias', s.totalFamilias],
-                ['Total de gêneros', s.totalGeneros],
-                ['Total de espécies (binômio)', s.totalEspecies],
-                ['Total de herbários de origem', s.totalSiglas],
-                ['Identificados até espécie', s.identificadosEspecie],
-                ['Identificados até gênero', s.identificadosGenero],
-                ['Identificados até família', s.identificadosFamilia],
-                ['Registros com "cf"', s.comCF],
-                ['% identificados até espécie', ((s.identificadosEspecie / s.total) * 100).toFixed(1) + '%'],
-                ['% com "cf"', ((s.comCF / s.total) * 100).toFixed(1) + '%'],
-            ];
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumoData), 'Resumo');
-
-            const addSheet = (nome, header, dados) => {
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([header, ...dados]), nome);
-            };
-
-            addSheet('Famílias', ['Família', 'Contagem', '%'],
-                s.famArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
-            addSheet('Gêneros', ['Gênero', 'Contagem', '%'],
-                s.genArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
-            addSheet('Espécies', ['Espécie (binômio)', 'Contagem', '%'],
-                s.spArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
-            addSheet('Hábito', ['Hábito', 'Contagem', '%'],
-                s.habitoArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
-            addSheet('Herbário de Origem', ['Sigla', 'Registros', '%', 'Espécies Distintas'],
-                s.siglaArray.map(([sigla, c, esp]) => [sigla, c, ((c / s.total) * 100).toFixed(1) + '%', esp]));
-
-            XLSX.writeFile(wb, 'estatisticas_botanicas.xlsx');
-        }
-
-        function mostrarErro(msg) {
-            errorText.textContent = msg;
-            errorMsg.style.display = 'flex';
-            resultsContainer.classList.add('hidden');
-            downloadBtn.classList.add('hidden');
-        }
-
-        function escapeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-    </script>
+function adicionarBotaoDownload(containerId, canvasId, fileName) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const oldBtn = container.querySelector('.chart-download-btn');
+    if (oldBtn) oldBtn.remove();
+    const btn = document.createElement('button');
+    btn.className = 'chart-download-btn';
+    btn.innerHTML = '<i class="fas fa-download"></i> PNG';
+    btn.title = 'Baixar gráfico como imagem';
+    btn.onclick = () => downloadChart(canvasId, fileName);
+    container.appendChild(btn);
+}
+function downloadChart(canvasId, fileName) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = (fileName || 'grafico') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+function renderizarCards() {
+    const s = estatisticas;
+    summaryCards.innerHTML = `
+        <div class="summary-card"><div class="summary-value">${s.total.toLocaleString()}</div><div class="summary-label">Registros</div></div>
+        <div class="summary-card"><div class="summary-value">${s.famArray.length.toLocaleString()}</div><div class="summary-label">Famílias</div></div>
+        <div class="summary-card"><div class="summary-value">${s.genArray.length.toLocaleString()}</div><div class="summary-label">Gêneros</div></div>
+        <div class="summary-card"><div class="summary-value">${s.spArray.length.toLocaleString()}</div><div class="summary-label">Espécies</div></div>
+        <div class="summary-card"><div class="summary-value">${s.siglaArray.filter(a=>a[0]!=='(não informado)').length.toLocaleString()}</div><div class="summary-label">Herbários</div></div>
+        <div class="summary-card"><div class="summary-value">${s.comCF.toLocaleString()}</div><div class="summary-label">Com "cf"</div></div>`;
+}
+function renderizarTaxonomia() {
+    const s=estatisticas;
+    const pctSp=s.total>0?((s.idSp/s.total)*100).toFixed(1):0, pctGen=s.total>0?((s.idGen/s.total)*100).toFixed(1):0, pctFam=s.total>0?((s.idFam/s.total)*100).toFixed(1):0;
+    document.getElementById('taxonomiaContent').innerHTML = `
+        <div class="explanation-box"><strong>Composição e diversidade taxonômica:</strong> Frequência das famílias, gêneros e espécies mais representados, riqueza total e nível de identificação dos registros.</div>
+        <p style="margin-bottom:1rem;color:var(--gray-600)"><strong>Identificação:</strong> ${s.idSp} até sp (${pctSp}%) · ${s.idGen} até gênero (${pctGen}%) · ${s.idFam} até família (${pctFam}%) · ${s.comCF} com cf</p>
+        <h3><i class="fas fa-sitemap"></i> Top 10 Famílias <button class="chart-download-btn" onclick="downloadChart('famChart','top10_familias')"><i class="fas fa-download"></i> PNG</button></h3><div class="chart-container"><canvas id="famChart"></canvas></div><div id="famTable"></div>
+        <h3><i class="fas fa-leaf"></i> Top 10 Gêneros <button class="chart-download-btn" onclick="downloadChart('genChart','top10_generos')"><i class="fas fa-download"></i> PNG</button></h3><div class="chart-container"><canvas id="genChart"></canvas></div><div id="genTable"></div>
+        <h3><i class="fas fa-tree"></i> Top 10 Espécies <button class="chart-download-btn" onclick="downloadChart('spChart','top10_especies')"><i class="fas fa-download"></i> PNG</button></h3><div class="chart-container"><canvas id="spChart"></canvas></div><div id="spTable"></div>`;
+    criarGraficoBarras('famChart', s.famArray.slice(0,10)); criarTabela('famTable', s.famArray, s.total, 'Família');
+    criarGraficoBarras('genChart', s.genArray.slice(0,10)); criarTabela('genTable', s.genArray, s.total, 'Gênero');
+    criarGraficoBarras('spChart', s.spArray.slice(0,10)); criarTabela('spTable', s.spArray, s.total, 'Espécie');
+}
+function renderizarRaridade() {
+    criarGraficoBarras('raridadeChart', estatisticas.raridadeArray);
+    adicionarBotaoDownload('raridadeContainer', 'raridadeChart', 'raridade');
+    criarTabelaRaridade('raridadeTable', estatisticas.raridadeArray);
+}
+function renderizarEsforco() {
+    criarGraficoBarras('coletasAnoChart', estatisticas.anoArray);
+    adicionarBotaoDownload('coletasAnoContainer', 'coletasAnoChart', 'coletas_por_ano');
+    criarGraficoBarras('coletasMesChart', estatisticas.mesArray.map(([m,c])=>[['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m-1],c]));
+    adicionarBotaoDownload('coletasMesContainer', 'coletasMesChart', 'coletas_por_mes');
+    if (estatisticas.curva.length) {
+        const ctx=document.getElementById('curvaAcumulacaoChart').getContext('2d');
+        if(charts['curvaAcumulacaoChart'])charts['curvaAcumulacaoChart'].destroy();
+        charts['curvaAcumulacaoChart']=new Chart(ctx,{type:'line',data:{labels:Array.from({length:estatisticas.curva.length},(_,i)=>i+1),datasets:[{label:'Espécies acumuladas',data:estatisticas.curva,borderColor:'#e67e22',backgroundColor:'rgba(230,126,34,0.1)',fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+        adicionarBotaoDownload('curvaAcumulacaoContainer', 'curvaAcumulacaoChart', 'curva_acumulacao');
+    }
+}
+function renderizarEspacial() {
+    criarGraficoBarrasHorizontal('municipioChart', estatisticas.municipioArray.slice(0,15));
+    adicionarBotaoDownload('municipioContainer', 'municipioChart', 'municipios');
+    criarGraficoBarrasHorizontal('localidadeChart', estatisticas.localidadeArray.slice(0,15));
+    adicionarBotaoDownload('localidadeContainer', 'localidadeChart', 'localidades');
+    const mapDiv=document.getElementById('mapContainer');
+    if(mapInstance){mapInstance.remove();mapInstance=null;}
+    if(estatisticas.pontos.length&&typeof L!=='undefined'){
+        mapInstance=L.map(mapDiv).setView([-25.44,-54.58],10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap'}).addTo(mapInstance);
+        currentMarkers=[];
+        estatisticas.pontos.slice(0,500).forEach(p=>{const m=L.marker([p.lat,p.lng]).bindPopup(p.nome);m.addTo(mapInstance);currentMarkers.push(m);});
+        if(heatLayer){mapInstance.removeLayer(heatLayer);heatLayer=null;}
+        heatmapToggle.checked=false;heatSettings.classList.add('hidden');
+        heatmapToggle.onchange=toggleHeatmap;
+        setTimeout(()=>mapInstance.invalidateSize(),100);
+    }
+}
+function toggleHeatmap() {
+    if(!mapInstance||!estatisticas||!estatisticas.pontos.length)return;
+    if(heatmapToggle.checked){
+        heatSettings.classList.remove('hidden');
+        currentMarkers.forEach(m=>mapInstance.removeLayer(m));
+        if(heatLayer)mapInstance.removeLayer(heatLayer);
+        const r=parseInt(heatRadius.value), b=parseInt(heatBlur.value);
+        const heatData=estatisticas.pontos.slice(0,500).map(p=>[p.lat,p.lng,0.5]);
+        heatLayer=L.heatLayer(heatData,{radius:r,blur:b,maxZoom:10}).addTo(mapInstance);
+    }else{
+        heatSettings.classList.add('hidden');
+        if(heatLayer){mapInstance.removeLayer(heatLayer);heatLayer=null;}
+        currentMarkers.forEach(m=>m.addTo(mapInstance));
+    }
+}
+function renderizarCompletude() {
+    const s=estatisticas;
+    const cp=((s.comCoord/s.total)*100).toFixed(1), sc=s.total-s.comCoord, sp=((sc/s.total)*100).toFixed(1);
+    const ctx=document.getElementById('completudeChart').getContext('2d');
+    if(charts['completudeChart'])charts['completudeChart'].destroy();
+    charts['completudeChart']=new Chart(ctx,{type:'doughnut',data:{labels:['Com coordenadas','Sem coordenadas'],datasets:[{data:[s.comCoord,sc],backgroundColor:['#27ae60','#e74c3c']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+    adicionarBotaoDownload('completudeContainer','completudeChart','completude');
+    document.getElementById('completudeTable').innerHTML=`<table class="stats-table"><thead><tr><th>Indicador</th><th class="num">Total</th><th class="num">%</th><th class="num">Faltante</th></tr></thead><tbody>
+        <tr><td>Coordenadas</td><td class="num">${s.comCoord}</td><td class="pct">${cp}%</td><td class="num">${sc} (${sp}%)</td></tr>
+        <tr><td>Data completa</td><td class="num">${s.comDataCompleta}</td><td class="pct">${((s.comDataCompleta/s.total)*100).toFixed(1)}%</td><td class="num">${s.total-s.comDataCompleta}</td></tr>
+        <tr><td>Determinador</td><td class="num">${s.comDet}</td><td class="pct">${((s.comDet/s.total)*100).toFixed(1)}%</td><td class="num">${s.total-s.comDet}</td></tr></tbody></table>`;
+}
+function renderizarComparacao() {
+    let html='<table class="stats-table"><thead><tr><th>Área</th><th class="num">Registros</th><th class="num">Espécies</th></tr></thead><tbody>';
+    estatisticas.areaArray.forEach(([n,t,sp])=>html+=`<tr><td>${escapeHTML(n)}</td><td class="num">${t}</td><td class="num">${sp}</td></tr>`);
+    html+='</tbody></table>';document.getElementById('comparacaoContent').innerHTML=html;
+}
+function renderizarHabito() {
+    criarGraficoPizza('habitoChart',estatisticas.habArray);adicionarBotaoDownload('habitoContainer','habitoChart','habito');
+    criarTabela('habitoTable',estatisticas.habArray,estatisticas.total,'Hábito');
+}
+function renderizarOrigem() {
+    criarGraficoBarrasHorizontal('origemChart',estatisticas.siglaArray.slice(0,15));adicionarBotaoDownload('origemContainer','origemChart','herbario_origem');
+    criarTabelaOrigem('origemTable',estatisticas.siglaArray,estatisticas.total);
+}
+function destruirGraficos(){Object.values(charts).forEach(c=>c.destroy());charts={};}
+function criarGraficoBarras(canvasId,dadosArray){
+    const canvas=document.getElementById(canvasId);if(!canvas)return;
+    const ctx=canvas.getContext('2d');if(charts[canvasId])charts[canvasId].destroy();
+    charts[canvasId]=new Chart(ctx,{type:'bar',data:{labels:dadosArray.map(d=>d[0]),datasets:[{data:dadosArray.map(d=>d[1]),backgroundColor:'#e67e22',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+}
+function criarGraficoBarrasHorizontal(canvasId,dadosArray){
+    const canvas=document.getElementById(canvasId);if(!canvas)return;
+    const ctx=canvas.getContext('2d');if(charts[canvasId])charts[canvasId].destroy();
+    charts[canvasId]=new Chart(ctx,{type:'bar',indexAxis:'y',data:{labels:dadosArray.map(d=>d[0]),datasets:[{data:dadosArray.map(d=>d[1]),backgroundColor:'#f39c12',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+}
+function criarGraficoPizza(canvasId,dadosArray){
+    const canvas=document.getElementById(canvasId);if(!canvas)return;
+    const ctx=canvas.getContext('2d');if(charts[canvasId])charts[canvasId].destroy();
+    const cores=['#1a5276','#2980b9','#2c6faa','#3498db','#5dade2','#e67e22','#f39c12','#d35400','#f1c40f','#e74c3c'];
+    charts[canvasId]=new Chart(ctx,{type:'pie',data:{labels:dadosArray.map(d=>d[0]),datasets:[{data:dadosArray.map(d=>d[1]),backgroundColor:cores.slice(0,dadosArray.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}});
+}
+function criarTabela(divId,array,total,coluna){
+    const div=document.getElementById(divId);if(!div)return;
+    let html=`<table class="stats-table"><thead><tr><th>${coluna}</th><th class="num">Contagem</th><th class="num">%</th></tr></thead><tbody>`;
+    array.forEach(([n,c])=>html+=`<tr><td>${escapeHTML(n)}</td><td class="num">${c}</td><td class="pct">${((c/total)*100).toFixed(1)}%</td></tr>`);
+    html+='</tbody></table>';div.innerHTML=html;
+}
+function criarTabelaOrigem(divId,array,total){
+    const div=document.getElementById(divId);if(!div)return;
+    let html=`<table class="stats-table"><thead><tr><th>Sigla</th><th class="num">Registros</th><th class="num">%</th><th class="num">Espécies dist.</th></tr></thead><tbody>`;
+    array.forEach(([sig,c,esp])=>html+=`<tr><td><strong>${escapeHTML(sig)}</strong></td><td class="num">${c}</td><td class="pct">${((c/total)*100).toFixed(1)}%</td><td class="num">${esp}</td></tr>`);
+    html+='</tbody></table>';div.innerHTML=html;
+}
+function criarTabelaRaridade(divId,array){
+    const div=document.getElementById(divId);if(!div)return;
+    let html=`<table class="stats-table"><thead><tr><th>Nº registros</th><th class="num">Espécies</th></tr></thead><tbody>`;
+    array.forEach(([n,c])=>html+=`<tr><td>${n}</td><td class="num">${c}</td></tr>`);
+    html+='</tbody></table>';div.innerHTML=html;
+}
+function toggleChartTable(chartId,tableId){
+    const c=document.getElementById(chartId),t=document.getElementById(tableId);
+    if(!c||!t)return;const p=c.parentElement;
+    if(p.style.display==='none'){p.style.display='block';t.classList.add('hidden');}
+    else{p.style.display='none';t.classList.remove('hidden');}
+}
+function downloadMap(){
+    const mapElement=document.getElementById('mapContainer');
+    if(!mapElement)return;
+    html2canvas(mapElement,{useCORS:true,scale:2}).then(canvas=>{
+        const link=document.createElement('a');
+        link.download='mapa_botanico.png';
+        link.href=canvas.toDataURL('image/png');
+        link.click();
+    });
+}
+function exportarXLSX(){
+    if(!estatisticas)return;
+    const s=estatisticas,wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Métrica','Valor'],['Total',s.total],['Famílias',s.famArray.length],['Gêneros',s.genArray.length],['Espécies',s.spArray.length]]),'Resumo');
+    const add=(n,c,d)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([c,...d]),n);
+    add('Raridade',['Registros','Espécies'],s.raridadeArray.map(([n,c])=>[n,c]));
+    add('Coletas/Ano',['Ano','Coletas'],s.anoArray.map(([a,c])=>[a,c]));
+    add('Coletas/Mês',['Mês','Coletas'],s.mesArray.map(([m,c])=>[['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m-1],c]));
+    add('Completude',['Indicador','Registros','%','Faltante'],[['Coordenadas',s.comCoord,((s.comCoord/s.total)*100).toFixed(1)+'%',s.total-s.comCoord],['Data',s.comDataCompleta,((s.comDataCompleta/s.total)*100).toFixed(1)+'%',s.total-s.comDataCompleta],['Determinador',s.comDet,((s.comDet/s.total)*100).toFixed(1)+'%',s.total-s.comDet]]);
+    add('Áreas',['Área','Registros','Espécies'],s.areaArray.map(([a,t,sp])=>[a,t,sp]));
+    XLSX.writeFile(wb,'estatisticas_botanicas_completo.xlsx');
+}
+function mostrarErro(msg){errorText.textContent=msg;errorMsg.style.display='flex';}
+function escapeHTML(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+</script>
 </body>
 </html>
