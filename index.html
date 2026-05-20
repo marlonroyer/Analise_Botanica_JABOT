@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Análise de Dados Botânicos - Formato JABOT">
+    <meta name="theme-color" content="#1a3a4a">
+    
+    <title>Análise Botânica - Estatísticas de Coleções</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1a5276;
+            --primary-light: #2c6faa;
+            --primary-dark: #0d3b5e;
+            --secondary: #1a3a4a;
+            --accent: #e67e22;
+            --accent-light: #f39c12;
+            --accent-dark: #d35400;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #2980b9;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --gray-50: #fafbfc;
+            --gray-100: #f5f6fa;
+            --gray-200: #e8ecf1;
+            --gray-300: #d5dce6;
+            --gray-400: #b0bec5;
+            --gray-500: #90a4ae;
+            --gray-600: #607d8b;
+            --gray-700: #455a64;
+            --white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(26,58,74,0.06);
+            --shadow-md: 0 4px 16px rgba(26,58,74,0.1);
+            --shadow-lg: 0 8px 32px rgba(26,58,74,0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-100);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================== HEADER ==================== */
+        .app-header {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            color: var(--white);
+            padding: 2rem 1.5rem;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 2.5em;
+            color: var(--accent);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .logo h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo h1 span {
+            color: var(--accent);
+            font-weight: 300;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: rgba(255,255,255,0.8);
+            font-weight: 400;
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* ==================== CARDS ==================== */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--gray-300);
+        }
+
+        .card-header {
+            background: var(--gray-50);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .card-header i {
+            font-size: 1.3em;
+            color: var(--primary);
+        }
+
+        .card-header h2 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--secondary);
+            flex: 1;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* ==================== INSTRUCTION CARDS ==================== */
+        .instructions-card .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .step-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            position: relative;
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+        }
+
+        .step-item:hover {
+            background: var(--white);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-number {
+            background: var(--primary);
+            color: var(--white);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 0.75rem;
+            font-size: 1.1em;
+        }
+
+        .step-item i {
+            font-size: 2em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .step-item p {
+            color: var(--gray-600);
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        /* ==================== UPLOAD CARDS ==================== */
+        .upload-card .upload-area {
+            border: 3px dashed var(--gray-300);
+            border-radius: var(--radius-md);
+            padding: 2.5rem 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            background: var(--gray-50);
+        }
+
+        .upload-card .upload-area:hover {
+            border-color: var(--accent);
+            background: #fef9f3;
+            transform: translateY(-1px);
+        }
+
+        .upload-card .upload-area.dragover {
+            border-color: var(--accent);
+            background: #fef5eb;
+            box-shadow: 0 0 0 4px rgba(230,126,34,0.1);
+        }
+
+        .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .upload-icon {
+            font-size: 3.5em;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-text {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .upload-subtext {
+            font-size: 0.9em;
+            color: var(--gray-500);
+        }
+
+        .btn {
+            padding: 0.6em 1.5em;
+            border-radius: 25px;
+            border: none;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-lg {
+            padding: 1em 2.5em;
+            font-size: 1.1em;
+            border-radius: 30px;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            font-size: 0.85em;
+            border: 1px solid var(--gray-200);
+        }
+
+        .status-icon {
+            font-size: 0.6em;
+            color: var(--gray-400);
+        }
+
+        .status-indicator.success .status-icon { color: var(--success); }
+        .status-indicator.error .status-icon { color: var(--danger); }
+
+        .status-text {
+            color: var(--gray-600);
+        }
+
+        /* ==================== BADGES ==================== */
+        .badge {
+            padding: 0.35em 0.75em;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-info {
+            background: var(--info);
+            color: var(--white);
+        }
+
+        /* ==================== SUMMARY CARDS ==================== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .summary-card {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: none;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--accent);
+            background: var(--white);
+        }
+
+        .summary-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .summary-label {
+            font-size: 0.8em;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        /* ==================== CHARTS & TABLES ==================== */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-height: 400px;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .stats-table th {
+            background: var(--gray-50);
+            color: var(--secondary);
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--gray-300);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stats-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .stats-table tr:hover td {
+            background: #fef9f3;
+        }
+
+        .stats-table .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stats-table .pct {
+            text-align: right;
+            color: var(--accent);
+        }
+
+        .toggle-btn {
+            background: var(--gray-200);
+            border: 1px solid var(--gray-300);
+            padding: 0.3em 0.75em;
+            border-radius: 15px;
+            font-size: 0.8em;
+            cursor: pointer;
+            color: var(--secondary);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            background: var(--gray-300);
+            border-color: var(--gray-400);
+        }
+
+        .info-note {
+            background: #fef9f3;
+            border-left: 4px solid var(--accent);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85em;
+            color: var(--secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        /* ==================== SPINNER ==================== */
+        .spinner-overlay {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner-overlay.active {
+            display: block;
+        }
+
+        .spinner-icon {
+            font-size: 2.5em;
+            color: var(--accent);
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner-text {
+            color: var(--gray-600);
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* ==================== ERROR MESSAGE ==================== */
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+
+        .alert-danger {
+            background: #fdeaea;
+            color: var(--danger);
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert i {
+            font-size: 1.2em;
+        }
+
+        /* ==================== FOOTER ==================== */
+        .app-footer {
+            background: var(--secondary);
+            color: var(--white);
+            padding: 2rem 1.5rem 1rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.1em;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+
+        .footer-section p {
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 1.5rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .instructions-card .steps-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-chart-bar"></i>
+                <h1>Análise<span>Botânica</span></h1>
+            </div>
+            <p class="subtitle">Estatísticas de Coleções • Formato JABOT • Taxonomia, Hábito & Herbário de Origem</p>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <main class="main-container">
+        <!-- Card de Instruções -->
+        <div class="card instructions-card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>Instruções</h2>
+            </div>
+            <div class="card-body">
+                <div class="steps-grid">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <i class="fas fa-file-excel"></i>
+                        <p>Carregue sua planilha do JABOT (.xlsx)</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <i class="fas fa-chart-pie"></i>
+                        <p>Visualize gráficos e estatísticas</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <i class="fas fa-download"></i>
+                        <p>Exporte os resultados em .xlsx</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerta de Erro -->
+        <div class="alert alert-danger" id="errorMsg">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <!-- Card de Upload -->
+        <div class="card upload-card">
+            <div class="card-header">
+                <i class="fas fa-file-excel"></i>
+                <h2>Planilha de Dados - JABOT</h2>
+            </div>
+            <div class="card-body">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                    <div class="upload-content">
+                        <i class="fas fa-table upload-icon"></i>
+                        <p class="upload-text">Selecionar planilha</p>
+                        <p class="upload-subtext">Formatos .xls ou .xlsx • Colunas no formato JABOT</p>
+                        <button class="btn btn-primary" type="button" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-folder-open"></i> Selecionar Arquivo
+                        </button>
+                    </div>
+                </div>
+                <div class="status-indicator" id="statusPlanilha">
+                    <span class="status-icon"><i class="fas fa-circle"></i></span>
+                    <span class="status-text" id="statusText">Nenhuma planilha selecionada</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spinner -->
+        <div class="spinner-overlay" id="spinnerOverlay">
+            <i class="fas fa-spinner spinner-icon"></i>
+            <p class="spinner-text">Processando dados...</p>
+        </div>
+
+        <!-- Resultados -->
+        <div id="resultsContainer" class="hidden">
+            <!-- Cards de Resumo -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h2>Resumo da Coleção</h2>
+                </div>
+                <div class="card-body">
+                    <div class="summary-grid" id="summaryCards"></div>
+                </div>
+            </div>
+
+            <!-- Nota sobre contagem -->
+            <div class="info-note">
+                ⚠️ <strong>Nota sobre contagem de espécies:</strong> Para evitar duplicações por variações de autoria (ex: <em>Á. Löve & D. Löve</em> vs. <em>Á.Löve & D.Löve</em>) e sinônimos aceitos sob o mesmo binômio, a riqueza é calculada apenas pelo par <strong>Gênero + epíteto específico</strong>, ignorando o autor. Isso reflete melhor a diversidade de espécies.
+            </div>
+
+            <!-- Taxonomia -->
+            <div class="card" id="sectionTaxonomia">
+                <div class="card-header">
+                    <i class="fas fa-dna"></i>
+                    <h2>Taxonomia</h2>
+                </div>
+                <div class="card-body" id="taxonomiaContent"></div>
+            </div>
+
+            <!-- Hábito -->
+            <div class="card" id="sectionHabito">
+                <div class="card-header">
+                    <i class="fas fa-seedling"></i>
+                    <h2>Hábito de Crescimento</h2>
+                    <button class="toggle-btn" onclick="toggleChartTable('habitoChart', 'habitoTable')">
+                        <i class="fas fa-exchange-alt"></i> Alternar visualização
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container"><canvas id="habitoChart"></canvas></div>
+                    <div id="habitoTable" class="hidden"></div>
+                </div>
+            </div>
+
+            <!-- Herbário de Origem -->
+            <div class="card" id="sectionOrigem">
+                <div class="card-header">
+                    <i class="fas fa-landmark"></i>
+                    <h2>Herbário de Origem (sigla_colbot_origem)</h2>
+                    <button class="toggle-btn" onclick="toggleChartTable('origemChart', 'origemTable')">
+                        <i class="fas fa-exchange-alt"></i> Alternar visualização
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container"><canvas id="origemChart"></canvas></div>
+                    <div id="origemTable" class="hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão Download -->
+        <button id="downloadBtn" class="btn btn-success btn-lg btn-block hidden">
+            <i class="fas fa-file-excel"></i> Baixar Estatísticas em .xlsx
+        </button>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Análise Botânica</h3>
+                <p>Ferramenta para análise exploratória de dados de coleções botânicas no formato JABOT</p>
+            </div>
+            <div class="footer-section">
+                <h3>Funcionalidades</h3>
+                <p>Taxonomia • Hábito • Herbário de Origem</p>
+                <p>Gráficos interativos • Exportação .xlsx</p>
+                <p>Contagem por binômio (sem autor)</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contato</h3>
+                <p><i class="fab fa-github"></i> github.com/marlonroyer</p>
+		<p>Desenvolvido por Marlon Royer de Morais</p>
+		<p>Versão 1.0 (fase experimental)</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Análise Botânica • Desenvolvido para processamento de dados do JABOT de uso interno do Herbário EVB</p>
+        </div>
+    </footer>
+
+    <!-- Bibliotecas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <!-- Script Principal -->
+    <script>
+        let dadosProcessados = null;
+        let estatisticas = null;
+        let charts = {};
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const statusPlanilha = document.getElementById('statusPlanilha');
+        const statusText = document.getElementById('statusText');
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        const errorMsg = document.getElementById('errorMsg');
+        const errorText = document.getElementById('errorText');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const summaryCards = document.getElementById('summaryCards');
+        const sectionTaxonomia = document.getElementById('sectionTaxonomia');
+        const sectionHabito = document.getElementById('sectionHabito');
+        const sectionOrigem = document.getElementById('sectionOrigem');
+        const taxonomiaContent = document.getElementById('taxonomiaContent');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+        downloadBtn.addEventListener('click', exportarXLSX);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            errorMsg.style.display = 'none';
+            resultsContainer.classList.add('hidden');
+            downloadBtn.classList.add('hidden');
+            destruirGraficos();
+
+            if (!file.name.match(/\.xlsx?$/i)) {
+                mostrarErro('Por favor, selecione um arquivo .xlsx ou .xls');
+                return;
+            }
+
+            statusPlanilha.classList.remove('success', 'error');
+            statusPlanilha.classList.add('success');
+            statusText.textContent = '📄 ' + file.name;
+            spinnerOverlay.classList.add('active');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const primeiraAba = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[primeiraAba];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '', raw: true });
+
+                    if (jsonData.length === 0) throw new Error('A planilha está vazia.');
+
+                    const primeiraLinha = jsonData[0];
+                    const colunasArquivo = Object.keys(primeiraLinha).map(c => c.toLowerCase().trim());
+
+                    const faltantes = [];
+                    ['family', 'genus', 'habito', 'sigla_colbot_origem'].forEach(col => {
+                        if (!colunasArquivo.includes(col)) faltantes.push(col);
+                    });
+
+                    if (faltantes.length > 0) {
+                        throw new Error('Colunas obrigatórias não encontradas: ' + faltantes.join(', ') +
+                            '\n\nColunas detectadas: ' + colunasArquivo.join(', '));
+                    }
+
+                    const dados = jsonData.map(row => {
+                        const novo = {};
+                        for (const [key, value] of Object.entries(row)) {
+                            novo[key.toLowerCase().trim()] = value;
+                        }
+                        return novo;
+                    });
+
+                    dadosProcessados = dados;
+                    processarEstatisticas(dados);
+
+                    spinnerOverlay.classList.remove('active');
+                    resultsContainer.classList.remove('hidden');
+                    downloadBtn.classList.remove('hidden');
+                    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                } catch (err) {
+                    spinnerOverlay.classList.remove('active');
+                    statusPlanilha.classList.remove('success');
+                    statusPlanilha.classList.add('error');
+                    statusText.textContent = 'Erro ao processar arquivo';
+                    mostrarErro('Erro: ' + err.message);
+                }
+            };
+            reader.onerror = function() {
+                spinnerOverlay.classList.remove('active');
+                mostrarErro('Erro ao ler o arquivo.');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processarEstatisticas(dados) {
+            const total = dados.length;
+
+            const famCount = {};
+            dados.forEach(d => {
+                const fam = String(d.family || '').trim();
+                if (fam) famCount[fam] = (famCount[fam] || 0) + 1;
+            });
+            const famArray = Object.entries(famCount).sort((a, b) => b[1] - a[1]);
+            const totalFamilias = famArray.length;
+
+            const genCount = {};
+            dados.forEach(d => {
+                const gen = String(d.genus || '').trim();
+                if (gen) genCount[gen] = (genCount[gen] || 0) + 1;
+            });
+            const genArray = Object.entries(genCount).sort((a, b) => b[1] - a[1]);
+            const totalGeneros = genArray.length;
+
+            const spCount = {};
+            dados.forEach(d => {
+                const genus = String(d.genus || '').trim();
+                const sp1 = String(d.sp1 || '').trim();
+                if (genus && sp1) {
+                    const binomio = (genus + ' ' + sp1).trim();
+                    spCount[binomio] = (spCount[binomio] || 0) + 1;
+                }
+            });
+            const spArray = Object.entries(spCount).sort((a, b) => b[1] - a[1]);
+            const totalEspecies = spArray.length;
+
+            let identificadosEspecie = 0,
+                identificadosGenero = 0,
+                identificadosFamilia = 0,
+                comCF = 0;
+            dados.forEach(d => {
+                const genus = String(d.genus || '').trim();
+                const sp1 = String(d.sp1 || '').trim();
+                const family = String(d.family || '').trim();
+                const cf = String(d.cf || '').trim();
+                if (genus && sp1) identificadosEspecie++;
+                else if (genus && !sp1) identificadosGenero++;
+                else if (family) identificadosFamilia++;
+                if (cf.toLowerCase() === 'cf' || cf === '1' || cf === 'yes' || cf === 'sim') comCF++;
+            });
+
+            const habitoCount = {};
+            dados.forEach(d => {
+                const hab = String(d.habito || '').trim();
+                if (hab) habitoCount[hab] = (habitoCount[hab] || 0) + 1;
+                else habitoCount['(não informado)'] = (habitoCount['(não informado)'] || 0) + 1;
+            });
+            const habitoArray = Object.entries(habitoCount).sort((a, b) => b[1] - a[1]);
+
+            const siglaCount = {};
+            const siglaEspeciesSet = {};
+            dados.forEach(d => {
+                const sigla = String(d.sigla_colbot_origem || '').trim() || '(não informado)';
+                const genus = String(d.genus || '').trim();
+                const sp1 = String(d.sp1 || '').trim();
+                siglaCount[sigla] = (siglaCount[sigla] || 0) + 1;
+                if (!siglaEspeciesSet[sigla]) siglaEspeciesSet[sigla] = new Set();
+                if (genus && sp1) siglaEspeciesSet[sigla].add((genus + ' ' + sp1).trim());
+            });
+            const siglaArray = Object.entries(siglaCount).map(([sigla, count]) => {
+                return [sigla, count, siglaEspeciesSet[sigla] ? siglaEspeciesSet[sigla].size : 0];
+            }).sort((a, b) => b[1] - a[1]);
+            const totalSiglas = siglaArray.filter(s => s[0] !== '(não informado)').length;
+
+            estatisticas = {
+                total,
+                totalFamilias,
+                totalGeneros,
+                totalEspecies,
+                identificadosEspecie,
+                identificadosGenero,
+                identificadosFamilia,
+                comCF,
+                famArray,
+                genArray,
+                spArray,
+                habitoArray,
+                siglaArray,
+                totalSiglas
+            };
+
+            renderizarCards();
+            renderizarTaxonomia();
+            renderizarHabito();
+            renderizarOrigem();
+        }
+
+        function renderizarCards() {
+            const s = estatisticas;
+            summaryCards.innerHTML = `
+                <div class="summary-card">
+                    <div class="summary-value">${s.total.toLocaleString()}</div>
+                    <div class="summary-label">Total de Registros</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${s.totalFamilias.toLocaleString()}</div>
+                    <div class="summary-label">Famílias</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${s.totalGeneros.toLocaleString()}</div>
+                    <div class="summary-label">Gêneros</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${s.totalEspecies.toLocaleString()}</div>
+                    <div class="summary-label">Espécies (binômio)</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${s.totalSiglas.toLocaleString()}</div>
+                    <div class="summary-label">Herbários de Origem</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${s.comCF.toLocaleString()}</div>
+                    <div class="summary-label">Com "cf"</div>
+                </div>
+            `;
+        }
+
+        function renderizarTaxonomia() {
+            sectionTaxonomia.classList.remove('hidden');
+            const s = estatisticas;
+
+            const pctEspecie = s.total > 0 ? ((s.identificadosEspecie / s.total) * 100).toFixed(1) : 0;
+            const pctGenero = s.total > 0 ? ((s.identificadosGenero / s.total) * 100).toFixed(1) : 0;
+            const pctFamilia = s.total > 0 ? ((s.identificadosFamilia / s.total) * 100).toFixed(1) : 0;
+            const pctCF = s.total > 0 ? ((s.comCF / s.total) * 100).toFixed(1) : 0;
+
+            let html = `
+                <p style="margin-bottom:1rem; color: var(--gray-600); font-size: 0.95em;">
+                    <strong>Nível de identificação:</strong> 
+                    ${s.identificadosEspecie} até espécie (${pctEspecie}%) · 
+                    ${s.identificadosGenero} até gênero (${pctGenero}%) · 
+                    ${s.identificadosFamilia} até família (${pctFamilia}%)<br>
+                    <strong>Registros com "cf" (conferir):</strong> ${s.comCF} (${pctCF}%)
+                </p>
+            `;
+
+            html += '<h3 style="color: var(--secondary); margin-top:1.5rem; margin-bottom:0.5rem;"><i class="fas fa-sitemap"></i> Top 10 Famílias</h3>';
+            html += '<div class="chart-container"><canvas id="famChart"></canvas></div>';
+            html += '<div id="famTable"></div>';
+
+            html += '<h3 style="color: var(--secondary); margin-top:1.5rem; margin-bottom:0.5rem;"><i class="fas fa-leaf"></i> Top 10 Gêneros</h3>';
+            html += '<div class="chart-container"><canvas id="genChart"></canvas></div>';
+            html += '<div id="genTable"></div>';
+
+            html += '<h3 style="color: var(--secondary); margin-top:1.5rem; margin-bottom:0.5rem;"><i class="fas fa-tree"></i> Top 10 Espécies (binômio)</h3>';
+            html += '<div class="chart-container"><canvas id="spChart"></canvas></div>';
+            html += '<div id="spTable"></div>';
+
+            taxonomiaContent.innerHTML = html;
+
+            criarGraficoBarras('famChart', s.famArray.slice(0, 10), 'Famílias');
+            criarTabela('famTable', s.famArray, s.total, 'Família');
+            criarGraficoBarras('genChart', s.genArray.slice(0, 10), 'Gêneros');
+            criarTabela('genTable', s.genArray, s.total, 'Gênero');
+            criarGraficoBarras('spChart', s.spArray.slice(0, 10), 'Espécies');
+            criarTabela('spTable', s.spArray, s.total, 'Espécie');
+        }
+
+        function renderizarHabito() {
+            sectionHabito.classList.remove('hidden');
+            criarGraficoPizza('habitoChart', estatisticas.habitoArray, 'Hábito');
+            criarTabela('habitoTable', estatisticas.habitoArray, estatisticas.total, 'Hábito');
+            document.getElementById('habitoChart').parentElement.style.display = 'block';
+            document.getElementById('habitoTable').classList.add('hidden');
+        }
+
+        function renderizarOrigem() {
+            sectionOrigem.classList.remove('hidden');
+            criarGraficoBarrasHorizontal('origemChart', estatisticas.siglaArray.slice(0, 15), 'Herbário de Origem');
+            criarTabelaOrigem('origemTable', estatisticas.siglaArray, estatisticas.total);
+            document.getElementById('origemChart').parentElement.style.display = 'block';
+            document.getElementById('origemTable').classList.add('hidden');
+        }
+
+        function destruirGraficos() {
+            Object.values(charts).forEach(chart => chart.destroy());
+            charts = {};
+        }
+
+        function criarGraficoBarras(canvasId, dadosArray, titulo) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (charts[canvasId]) charts[canvasId].destroy();
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dadosArray.map(d => d[0]),
+                    datasets: [{
+                        label: 'Registros',
+                        data: dadosArray.map(d => d[1]),
+                        backgroundColor: '#e67e22',
+                        borderColor: '#d35400',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Quantidade', color: '#607d8b' }, ticks: { color: '#607d8b' } },
+                        x: { ticks: { color: '#607d8b', maxRotation: 45, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function criarGraficoBarrasHorizontal(canvasId, dadosArray, titulo) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (charts[canvasId]) charts[canvasId].destroy();
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dadosArray.map(d => d[0]),
+                    datasets: [{
+                        label: 'Registros',
+                        data: dadosArray.map(d => d[1]),
+                        backgroundColor: '#f39c12',
+                        borderColor: '#d35400',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, title: { display: true, text: 'Quantidade', color: '#607d8b' }, ticks: { color: '#607d8b' } },
+                        y: { ticks: { color: '#607d8b', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function criarGraficoPizza(canvasId, dadosArray, titulo) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (charts[canvasId]) charts[canvasId].destroy();
+
+            const cores = ['#1a5276', '#2980b9', '#2c6faa', '#3498db', '#5dade2',
+                '#e67e22', '#f39c12', '#d35400', '#f1c40f', '#e74c3c'
+            ];
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: dadosArray.map(d => d[0]),
+                    datasets: [{
+                        data: dadosArray.map(d => d[1]),
+                        backgroundColor: cores.slice(0, dadosArray.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 }, color: '#607d8b' } }
+                    }
+                }
+            });
+        }
+
+        function criarTabela(divId, array, total, colunaNome) {
+            const div = document.getElementById(divId);
+            if (!div) return;
+            let html = `<table class="stats-table">
+                <thead><tr><th>${colunaNome}</th><th class="num">Contagem</th><th class="num">%</th></tr></thead><tbody>`;
+            array.forEach(([nome, count]) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                html += `<tr><td>${escapeHTML(nome)}</td><td class="num">${count.toLocaleString()}</td><td class="pct">${pct}%</td></tr>`;
+            });
+            html += '</tbody></table>';
+            div.innerHTML = html;
+        }
+
+        function criarTabelaOrigem(divId, array, total) {
+            const div = document.getElementById(divId);
+            if (!div) return;
+            let html = `<table class="stats-table">
+                <thead><tr><th>Sigla</th><th class="num">Registros</th><th class="num">%</th><th class="num">Espécies dist.</th></tr></thead><tbody>`;
+            array.forEach(([sigla, count, espDist]) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                html += `<tr><td><strong>${escapeHTML(sigla)}</strong></td><td class="num">${count.toLocaleString()}</td><td class="pct">${pct}%</td><td class="num">${espDist.toLocaleString()}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            div.innerHTML = html;
+        }
+
+        function toggleChartTable(chartId, tableId) {
+            const chartCanvas = document.getElementById(chartId);
+            const tableDiv = document.getElementById(tableId);
+            if (!chartCanvas || !tableDiv) return;
+            const chartContainer = chartCanvas.parentElement;
+
+            if (chartContainer.style.display === 'none') {
+                chartContainer.style.display = 'block';
+                tableDiv.classList.add('hidden');
+            } else {
+                chartContainer.style.display = 'none';
+                tableDiv.classList.remove('hidden');
+            }
+        }
+
+        function exportarXLSX() {
+            if (!estatisticas) return;
+            const s = estatisticas;
+            const wb = XLSX.utils.book_new();
+
+            const resumoData = [
+                ['Métrica', 'Valor'],
+                ['Total de registros', s.total],
+                ['Total de famílias', s.totalFamilias],
+                ['Total de gêneros', s.totalGeneros],
+                ['Total de espécies (binômio)', s.totalEspecies],
+                ['Total de herbários de origem', s.totalSiglas],
+                ['Identificados até espécie', s.identificadosEspecie],
+                ['Identificados até gênero', s.identificadosGenero],
+                ['Identificados até família', s.identificadosFamilia],
+                ['Registros com "cf"', s.comCF],
+                ['% identificados até espécie', ((s.identificadosEspecie / s.total) * 100).toFixed(1) + '%'],
+                ['% com "cf"', ((s.comCF / s.total) * 100).toFixed(1) + '%'],
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumoData), 'Resumo');
+
+            const addSheet = (nome, header, dados) => {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([header, ...dados]), nome);
+            };
+
+            addSheet('Famílias', ['Família', 'Contagem', '%'],
+                s.famArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
+            addSheet('Gêneros', ['Gênero', 'Contagem', '%'],
+                s.genArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
+            addSheet('Espécies', ['Espécie (binômio)', 'Contagem', '%'],
+                s.spArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
+            addSheet('Hábito', ['Hábito', 'Contagem', '%'],
+                s.habitoArray.map(([n, c]) => [n, c, ((c / s.total) * 100).toFixed(1) + '%']));
+            addSheet('Herbário de Origem', ['Sigla', 'Registros', '%', 'Espécies Distintas'],
+                s.siglaArray.map(([sigla, c, esp]) => [sigla, c, ((c / s.total) * 100).toFixed(1) + '%', esp]));
+
+            XLSX.writeFile(wb, 'estatisticas_botanicas.xlsx');
+        }
+
+        function mostrarErro(msg) {
+            errorText.textContent = msg;
+            errorMsg.style.display = 'flex';
+            resultsContainer.classList.add('hidden');
+            downloadBtn.classList.add('hidden');
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
