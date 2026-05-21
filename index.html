@@ -3,569 +3,2735 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Análise de Dados Botânicos - Formato JABOT">
-    <meta name="theme-color" content="#1a3a4a">
+    <meta name="description" content="Análise exploratória de coleções botânicas no formato JABOT">
+    <meta name="theme-color" content="#17384a">
     <title>Análise Botânica - Estatísticas de Coleções</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         :root {
-            --primary: #1a5276; --primary-light: #2c6faa; --primary-dark: #0d3b5e;
-            --secondary: #1a3a4a; --accent: #e67e22; --accent-light: #f39c12;
-            --accent-dark: #d35400; --success: #27ae60; --warning: #f39c12;
-            --danger: #e74c3c; --info: #2980b9; --light: #f8f9fa; --dark: #2c3e50;
-            --gray-50: #fafbfc; --gray-100: #f5f6fa; --gray-200: #e8ecf1;
-            --gray-300: #d5dce6; --gray-400: #b0bec5; --gray-500: #90a4ae;
-            --gray-600: #607d8b; --gray-700: #455a64; --white: #ffffff;
-            --shadow-sm: 0 2px 8px rgba(26,58,74,0.06);
-            --shadow-md: 0 4px 16px rgba(26,58,74,0.1);
-            --shadow-lg: 0 8px 32px rgba(26,58,74,0.15);
-            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
-            --transition: all 0.3s ease;
+            --primary: #1a5276;
+            --primary-dark: #123b56;
+            --secondary: #17384a;
+            --accent: #e67e22;
+            --accent-soft: #fff4e8;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --info: #2980b9;
+            --surface: #ffffff;
+            --page: #f4f7fa;
+            --muted: #607d8b;
+            --text: #243746;
+            --line: #d9e1ea;
+            --line-soft: #e9eef4;
+            --shadow-sm: 0 2px 10px rgba(23, 56, 74, 0.07);
+            --shadow-md: 0 8px 24px rgba(23, 56, 74, 0.12);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--gray-100); color: var(--dark);
-            min-height: 100vh; display: flex; flex-direction: column;
+            min-height: 100vh;
+            background: var(--page);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
+
+        code {
+            background: #eef3f7;
+            border-radius: 4px;
+            padding: 0.1rem 0.25rem;
+            font-size: 0.92em;
+        }
+
         .app-header {
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
-            color: var(--white); padding: 1.5rem 1.5rem; box-shadow: var(--shadow-md);
-            position: sticky; top: 0; z-index: 1000;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: #fff;
+            padding: 1.35rem 1.5rem;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .header-content { max-width: 1200px; margin: 0 auto; text-align: center; }
-        .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 0.5rem; }
-        .logo i { font-size: 2.2em; color: var(--accent); animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        .logo h1 { font-size: 2em; font-weight: 700; letter-spacing: -0.5px; }
-        .logo h1 span { color: var(--accent); font-weight: 300; }
-        .subtitle { font-size: 0.9em; color: rgba(255,255,255,0.8); }
-        .main-container { max-width: 1200px; margin: 1.5rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
+
+        .header-content,
+        .main-container,
+        .footer-content,
+        .footer-bottom {
+            width: min(1200px, 100%);
+            margin-inline: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .logo i {
+            color: var(--accent);
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: clamp(1.45rem, 4vw, 2rem);
+            font-weight: 750;
+            letter-spacing: 0;
+        }
+
+        .logo span {
+            color: var(--accent);
+            font-weight: 350;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.92rem;
+            text-align: center;
+        }
+
+        .main-container {
+            flex: 1;
+            padding: 1.4rem 1.5rem 2rem;
+        }
+
         .card {
-            background: var(--white); border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm); margin-bottom: 1.2rem; overflow: hidden;
-            transition: var(--transition); border: 1px solid var(--gray-200);
+            background: var(--surface);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1rem;
+            overflow: hidden;
         }
-        .card:hover { box-shadow: var(--shadow-md); }
+
         .card-header {
-            background: var(--gray-50); padding: 0.8rem 1.2rem; display: flex;
-            align-items: center; gap: 0.75rem; border-bottom: 2px solid var(--gray-200);
-            cursor: pointer; user-select: none;
+            align-items: center;
+            background: #fbfcfe;
+            border-bottom: 1px solid var(--line-soft);
+            cursor: pointer;
+            display: flex;
+            gap: 0.75rem;
+            min-height: 3.1rem;
+            padding: 0.75rem 1rem;
+            user-select: none;
         }
-        .card-header i { font-size: 1.2em; color: var(--primary); }
-        .card-header h2 { font-size: 1.05em; font-weight: 600; color: var(--secondary); flex: 1; }
-        .card-header .collapse-icon { transition: transform 0.3s; }
-        .card-body { padding: 1.2rem; display: none; }
-        .card.expanded .card-body { display: block; }
-        .card.expanded .collapse-icon { transform: rotate(90deg); }
-        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .step-item {
-            text-align: center; padding: 1.5rem; background: var(--gray-50);
-            border-radius: var(--radius-md); transition: var(--transition); border: 1px solid var(--gray-200);
+
+        .card-header i {
+            color: var(--primary);
+            font-size: 1.05rem;
         }
-        .step-item:hover { background: var(--white); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .step-number { background: var(--primary); color: var(--white); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 0.75rem; font-size: 1.1em; }
-        .step-item i { font-size: 2em; color: var(--accent); margin-bottom: 0.75rem; }
-        .step-item p { color: var(--gray-600); font-size: 0.9em; line-height: 1.4; }
-        .upload-card .upload-area {
-            border: 3px dashed var(--gray-300); border-radius: var(--radius-md);
-            padding: 2rem 1.5rem; cursor: pointer; transition: var(--transition);
-            text-align: center; background: var(--gray-50);
+
+        .card-header h2 {
+            color: var(--secondary);
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 650;
+            line-height: 1.25;
         }
-        .upload-card .upload-area:hover { border-color: var(--accent); background: #fef9f3; }
-        .upload-card .upload-area.dragover { border-color: var(--accent); background: #fef5eb; box-shadow: 0 0 0 4px rgba(230,126,34,0.1); }
-        .upload-content { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-        .upload-icon { font-size: 3em; color: var(--accent); }
-        .upload-text { font-size: 1.1em; font-weight: 600; color: var(--secondary); }
-        .upload-subtext { font-size: 0.85em; color: var(--gray-500); }
-        .btn {
-            padding: 0.5em 1.2em; border-radius: 20px; border: none; font-size: 0.9em;
-            font-weight: 600; cursor: pointer; transition: var(--transition);
-            display: inline-flex; align-items: center; gap: 0.4em;
+
+        .collapse-icon {
+            transition: transform 0.2s ease;
         }
-        .btn-primary { background: var(--primary); color: var(--white); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .btn-success { background: var(--success); color: var(--white); }
-        .btn-success:hover { background: #219a52; transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .btn-sm { padding: 0.3em 0.7em; font-size: 0.8em; }
-        .btn-lg { padding: 0.8em 2em; font-size: 1em; border-radius: 25px; }
-        .btn-block { display: block; width: 100%; text-align: center; justify-content: center; }
-        .status-indicator {
-            display: flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem;
-            padding: 0.4rem 0.6rem; background: var(--gray-50); border-radius: var(--radius-sm);
-            font-size: 0.85em; border: 1px solid var(--gray-200);
+
+        .card-body {
+            display: none;
+            padding: 1.1rem;
         }
-        .status-icon { font-size: 0.6em; color: var(--gray-400); }
-        .status-indicator.success .status-icon { color: var(--success); }
-        .status-text { color: var(--gray-600); }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; }
+
+        .card.expanded .card-body {
+            display: block;
+        }
+
+        .card.expanded .collapse-icon {
+            transform: rotate(90deg);
+        }
+
+        .steps-grid,
+        .summary-grid {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .steps-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .step-item,
         .summary-card {
-            background: var(--gray-50); border-radius: var(--radius-md); padding: 1rem;
-            text-align: center; border: 1px solid var(--gray-200); transition: var(--transition);
+            background: #fbfcfe;
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-md);
         }
-        .summary-card:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--white); }
-        .summary-value { font-size: 1.8em; font-weight: 700; color: var(--primary); }
-        .summary-label { font-size: 0.75em; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
-        .chart-container { position: relative; width: 100%; max-height: 350px; margin-bottom: 1.5rem; }
-        .chart-container canvas { width: 100% !important; height: 100% !important; }
-        .chart-download-btn {
-            background: none; border: 1px solid var(--gray-300); color: var(--gray-600);
-            padding: 0.25em 0.6em; border-radius: 5px; cursor: pointer; font-size: 0.8em;
-            transition: var(--transition);
+
+        .step-item {
+            padding: 1.15rem;
+            text-align: center;
         }
-        .chart-download-btn:hover { background: var(--gray-100); border-color: var(--accent); color: var(--accent); }
-        .stats-table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-        .stats-table th { background: var(--gray-50); color: var(--secondary); padding: 0.5rem 0.6rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--gray-300); font-size: 0.8em; text-transform: uppercase; }
-        .stats-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--gray-200); }
-        .stats-table tr:hover td { background: #fef9f3; }
-        .stats-table .num { text-align: right; }
-        .stats-table .pct { text-align: right; color: var(--accent); }
+
+        .step-number {
+            align-items: center;
+            background: var(--primary);
+            border-radius: 999px;
+            color: #fff;
+            display: flex;
+            font-weight: 750;
+            height: 2.25rem;
+            justify-content: center;
+            margin: 0 auto 0.65rem;
+            width: 2.25rem;
+        }
+
+        .step-item i {
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .step-item p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .upload-area {
+            background: #fbfcfe;
+            border: 2px dashed #c8d4df;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            padding: 2rem 1.2rem;
+            text-align: center;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.12);
+        }
+
+        .upload-content {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .upload-icon {
+            color: var(--accent);
+            font-size: 2.8rem;
+        }
+
+        .upload-text {
+            color: var(--secondary);
+            font-size: 1.08rem;
+            font-weight: 700;
+        }
+
+        .upload-subtext,
+        .status-text {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .btn {
+            align-items: center;
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+            display: inline-flex;
+            font-size: 0.9rem;
+            font-weight: 700;
+            gap: 0.45rem;
+            justify-content: center;
+            line-height: 1;
+            padding: 0.65rem 1rem;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.45rem 0.75rem;
+        }
+
+        .btn-lg {
+            font-size: 1rem;
+            padding: 0.85rem 1.4rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .status-indicator {
+            align-items: center;
+            background: #fbfcfe;
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-sm);
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            padding: 0.55rem 0.7rem;
+        }
+
+        .status-icon {
+            color: #aab8c4;
+            font-size: 0.6rem;
+        }
+
+        .status-indicator.success .status-icon {
+            color: var(--success);
+        }
+
+        .status-indicator.error .status-icon {
+            color: var(--danger);
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+
+        .summary-card {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-value {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .summary-label {
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            align-items: center;
+            color: var(--secondary);
+            display: flex;
+            font-size: 1rem;
+            gap: 0.5rem;
+            justify-content: space-between;
+            margin: 1.2rem 0 0.6rem;
+        }
+
+        .chart-container {
+            height: 320px;
+            margin-bottom: 1rem;
+            position: relative;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .chart-download-btn,
         .toggle-btn {
-            background: var(--gray-200); border: 1px solid var(--gray-300); padding: 0.25em 0.6em;
-            border-radius: 12px; font-size: 0.8em; cursor: pointer; color: var(--secondary);
-            font-weight: 600; transition: var(--transition);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.35rem 0.65rem;
         }
-        .toggle-btn:hover { background: var(--gray-300); }
-        .info-note {
-            background: #fef9f3; border-left: 4px solid var(--accent); padding: 0.6rem 0.8rem;
-            margin-bottom: 1rem; font-size: 0.85em; color: var(--secondary); border-radius: var(--radius-sm);
+
+        .chart-download-btn:hover,
+        .toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
+
+        .stats-table {
+            border-collapse: collapse;
+            font-size: 0.86rem;
+            width: 100%;
+        }
+
+        .stats-table th {
+            background: #f6f8fb;
+            border-bottom: 2px solid var(--line);
+            color: var(--secondary);
+            font-size: 0.76rem;
+            padding: 0.55rem 0.6rem;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .stats-table td {
+            border-bottom: 1px solid var(--line-soft);
+            padding: 0.5rem 0.6rem;
+            vertical-align: top;
+        }
+
+        .stats-table tr:hover td {
+            background: var(--accent-soft);
+        }
+
+        .num,
+        .pct {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .pct {
+            color: var(--accent);
+            font-weight: 650;
+        }
+
+        .note,
         .explanation-box {
-            background: #f0f7ff; border-left: 4px solid var(--info); padding: 0.6rem 0.8rem;
-            margin-bottom: 1rem; border-radius: var(--radius-sm); font-size: 0.85em; color: var(--secondary);
+            border-left: 4px solid var(--accent);
+            border-radius: var(--radius-sm);
+            color: var(--secondary);
+            font-size: 0.88rem;
+            line-height: 1.45;
+            margin-bottom: 1rem;
+            padding: 0.7rem 0.85rem;
         }
-        .spinner-overlay { display: none; text-align: center; padding: 1.5rem; }
-        .spinner-overlay.active { display: block; }
-        .spinner-icon { font-size: 2.2em; color: var(--accent); animation: spin 1.2s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner-text { color: var(--gray-600); font-weight: 600; margin-top: 0.3rem; }
-        .alert { padding: 0.8rem 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; display: none; align-items: center; gap: 0.5rem; font-weight: 500; }
-        .alert-danger { background: #fdeaea; color: var(--danger); border: 1px solid #f5c6cb; }
+
+        .note {
+            background: var(--accent-soft);
+        }
+
+        .explanation-box {
+            background: #eef7ff;
+            border-left-color: var(--info);
+        }
+
+        .alert {
+            align-items: flex-start;
+            background: #fdecea;
+            border: 1px solid #f3b9b3;
+            border-radius: var(--radius-md);
+            color: var(--danger);
+            display: none;
+            gap: 0.55rem;
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            white-space: pre-line;
+        }
+
+        .spinner-overlay {
+            display: none;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .spinner-overlay.active {
+            display: block;
+        }
+
+        .spinner-icon {
+            animation: spin 1s linear infinite;
+            color: var(--accent);
+            font-size: 2rem;
+        }
+
+        .spinner-text {
+            color: var(--muted);
+            font-weight: 700;
+            margin-top: 0.4rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #mapContainer {
+            border-radius: var(--radius-md);
+            height: 420px;
+            overflow: hidden;
+        }
+
+        .map-controls {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 0.75rem;
+            font-size: 0.86rem;
+        }
+
+        .heat-settings {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .heat-settings input[type="range"] {
+            width: 86px;
+        }
+
+        .report-box {
+            background: #fff;
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-md);
+            color: #1f2d38;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            max-height: 620px;
+            overflow: auto;
+            padding: 1.1rem;
+        }
+
+        .report-box h3 {
+            color: var(--secondary);
+            font-size: 1.05rem;
+            margin: 1rem 0 0.35rem;
+        }
+
+        .report-box h3:first-child {
+            margin-top: 0;
+        }
+
+        .report-box p {
+            margin-bottom: 0.75rem;
+        }
+
+        .species-list-wrap {
+            overflow-x: auto;
+        }
+
+        .species-list-table {
+            font-size: 0.9rem;
+            min-width: 820px;
+        }
+
+        .species-list-table th {
+            background: #fff;
+            border-bottom: 1px solid #1f2d38;
+            border-top: 1px solid #1f2d38;
+            color: #111;
+            font-size: 0.88rem;
+            padding-block: 0.35rem;
+            text-transform: none;
+        }
+
+        .species-list-table td {
+            border-bottom: 0;
+            color: #111;
+            padding-block: 0.24rem;
+        }
+
+        .species-list-table tbody tr:last-child td {
+            padding-bottom: 0.8rem;
+        }
+
+        .species-list-table tfoot td {
+            border-top: 1px solid #1f2d38;
+            padding: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         .app-footer {
-            background: var(--secondary); color: var(--white); padding: 1.5rem 1rem 0.8rem; margin-top: auto;
+            background: var(--secondary);
+            color: #fff;
+            margin-top: auto;
+            padding: 1.5rem 1.5rem 0.9rem;
         }
-        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .footer-section h3 { font-size: 1em; margin-bottom: 0.5rem; color: var(--accent); }
-        .footer-section p { font-size: 0.8em; color: rgba(255,255,255,0.7); line-height: 1.5; }
-        .footer-bottom { max-width: 1200px; margin: 1rem auto 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 0.75em; color: rgba(255,255,255,0.5); }
-        #mapContainer { height: 400px; border-radius: var(--radius-md); }
-        .map-controls { margin-top: 0.5rem; display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.85em; }
-        .heat-settings { display: flex; align-items: center; gap: 0.5rem; }
-        .heat-settings label { font-size: 0.8em; color: var(--gray-600); }
-        .heat-settings input[type="range"] { width: 80px; }
-        .hidden { display: none !important; }
-        .collapse-all-btns { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+
+        .footer-content {
+            display: grid;
+            gap: 1.3rem;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .footer-section h3 {
+            color: var(--accent);
+            font-size: 0.98rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.76rem;
+            margin-top: 1rem;
+            padding-top: 0.85rem;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
-            .steps-grid { grid-template-columns: 1fr; }
-            .footer-content { grid-template-columns: 1fr; text-align: center; }
-            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .main-container {
+                padding-inline: 1rem;
+            }
+
+            .steps-grid,
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-container {
+                height: 280px;
+            }
+
+            .footer-content {
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-<header class="app-header">
-    <div class="header-content">
-        <div class="logo"><i class="fas fa-chart-bar"></i><h1>Análise<span>Botânica</span></h1></div>
-        <p class="subtitle">Estatísticas de Coleções • Formato JABOT</p>
-    </div>
-</header>
-<main class="main-container">
-    <div class="card instructions-card">
-        <div class="card-header"><i class="fas fa-info-circle"></i><h2>Instruções</h2></div>
-        <div class="card-body" style="display:block;">
-            <div class="steps-grid">
-                <div class="step-item"><div class="step-number">1</div><i class="fas fa-file-excel"></i><p>Carregue sua planilha do JABOT (.xlsx)</p></div>
-                <div class="step-item"><div class="step-number">2</div><i class="fas fa-chart-pie"></i><p>Expanda as seções de interesse</p></div>
-                <div class="step-item"><div class="step-number">3</div><i class="fas fa-download"></i><p>Exporte os resultados em .xlsx</p></div>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                <h1>Análise<span>Botânica</span></h1>
             </div>
+            <p class="subtitle">Estatísticas de coleções - Formato JABOT</p>
         </div>
-    </div>
-    <div class="alert alert-danger" id="errorMsg"><i class="fas fa-exclamation-triangle"></i><span id="errorText"></span></div>
-    <div class="card upload-card">
-        <div class="card-header"><i class="fas fa-file-excel"></i><h2>Planilha de Dados - JABOT</h2></div>
-        <div class="card-body" style="display:block;">
-            <div class="upload-area" id="uploadArea">
-                <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
-                <div class="upload-content">
-                    <i class="fas fa-table upload-icon"></i>
-                    <p class="upload-text">Selecionar planilha</p>
-                    <p class="upload-subtext">Formatos .xls ou .xlsx</p>
-                    <button class="btn btn-primary" type="button" onclick="document.getElementById('fileInput').click()"><i class="fas fa-folder-open"></i> Selecionar Arquivo</button>
+    </header>
+
+    <main class="main-container">
+        <section class="card expanded">
+            <div class="card-header" data-toggle-card>
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <h2>Instruções</h2>
+                <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+            </div>
+            <div class="card-body">
+                <div class="steps-grid">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <i class="fas fa-file-excel" aria-hidden="true"></i>
+                        <p>Carregue sua planilha do JABOT em formato .xls ou .xlsx.</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                        <p>Abra as seções para ver gráficos, tabelas, mapa e completude.</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        <p>Exporte estatísticas e gráficos para documentar a análise.</p>
+                    </div>
                 </div>
             </div>
-            <div class="status-indicator" id="statusPlanilha"><span class="status-icon"><i class="fas fa-circle"></i></span><span class="status-text" id="statusText">Nenhuma planilha selecionada</span></div>
+        </section>
+
+        <div class="alert" id="errorMsg">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            <span id="errorText"></span>
         </div>
-    </div>
-    <div class="spinner-overlay" id="spinnerOverlay"><i class="fas fa-spinner spinner-icon"></i><p class="spinner-text">Processando dados...</p></div>
-    <div id="resultsContainer" class="hidden">
-        <div class="collapse-all-btns">
-            <button class="btn btn-sm btn-primary" onclick="toggleAllCards(true)"><i class="fas fa-expand-alt"></i> Expandir todos</button>
-            <button class="btn btn-sm btn-primary" onclick="toggleAllCards(false)"><i class="fas fa-compress-alt"></i> Colapsar todos</button>
-        </div>
-        <div class="card expanded" id="cardResumo"><div class="card-header" onclick="toggleCard('cardResumo')"><i class="fas fa-tachometer-alt"></i><h2>Resumo da Coleção</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="summary-grid" id="summaryCards"></div></div></div>
-        <div class="info-note">⚠️ <strong>Nota:</strong> A riqueza de espécies é calculada por binômio (gênero + epíteto) para evitar duplicações por variação de autoria.</div>
-        <div class="card" id="cardTaxonomia"><div class="card-header" onclick="toggleCard('cardTaxonomia')"><i class="fas fa-dna"></i><h2>Taxonomia</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body" id="taxonomiaContent"></div></div>
-        <div class="card" id="cardRaridade"><div class="card-header" onclick="toggleCard('cardRaridade')"><i class="fas fa-gem"></i><h2>Raridade</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>O que mostra:</strong> Quantas espécies aparecem com apenas 1 registro, 2 registros, etc. Uma cauda longa indica muitos táxons raros.</div><div class="chart-container" id="raridadeContainer"><canvas id="raridadeChart"></canvas></div><div id="raridadeTable"></div></div></div>
-        <div class="card" id="cardEsforco"><div class="card-header" onclick="toggleCard('cardEsforco')"><i class="fas fa-calendar-alt"></i><h2>Esforço Amostral Temporal</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Coletas por ano:</strong> intensidade de coletas.<br><strong>Coletas por mês:</strong> sazonalidade.<br><strong>Curva de acumulação de espécies:</strong> saturação da amostragem.</div><div class="chart-container" id="coletasAnoContainer"><canvas id="coletasAnoChart"></canvas></div><div class="chart-container" id="coletasMesContainer"><canvas id="coletasMesChart"></canvas></div><div class="chart-container" id="curvaAcumulacaoContainer"><canvas id="curvaAcumulacaoChart"></canvas></div></div></div>
-        <div class="card" id="cardEspacial"><div class="card-header" onclick="toggleCard('cardEspacial')"><i class="fas fa-map-marker-alt"></i><h2>Distribuição Espacial</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Municípios/localidades mais amostrados</strong> e mapa interativo com opção de calor (kernel).</div><div class="chart-container" id="municipioContainer"><canvas id="municipioChart"></canvas></div><div class="chart-container" id="localidadeContainer"><canvas id="localidadeChart"></canvas></div><div id="mapContainer"></div><div class="map-controls">
-            <label><input type="checkbox" id="heatmapToggle"> Mapa de calor (Kernel)</label>
-            <div id="heatSettings" class="heat-settings hidden">
-                <label>Raio: <input type="range" id="heatRadius" min="5" max="50" value="20" step="1"> <span id="radiusVal">20</span></label>
-                <label>Suavização: <input type="range" id="heatBlur" min="5" max="30" value="15" step="1"> <span id="blurVal">15</span></label>
+
+        <section class="card upload-card expanded">
+            <div class="card-header" data-toggle-card>
+                <i class="fas fa-file-excel" aria-hidden="true"></i>
+                <h2>Planilha de Dados - JABOT</h2>
+                <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
             </div>
-            <button class="btn btn-sm btn-primary" onclick="downloadMap()"><i class="fas fa-download"></i> Mapa PNG</button>
-        </div></div></div>
-        <div class="card" id="cardCompletude"><div class="card-header" onclick="toggleCard('cardCompletude')"><i class="fas fa-check-circle"></i><h2>Completude dos Dados</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>% com coordenadas, data completa e determinador.</strong></div><div class="chart-container" id="completudeContainer"><canvas id="completudeChart"></canvas></div><div id="completudeTable"></div></div></div>
-        <div class="card" id="cardComparacao"><div class="card-header" onclick="toggleCard('cardComparacao')"><i class="fas fa-balance-scale"></i><h2>Comparação entre Áreas (majorarea)</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Total de registros e espécies por município/região.</strong></div><div id="comparacaoContent"></div></div></div>
-        <div class="card" id="cardHabito"><div class="card-header" onclick="toggleCard('cardHabito')"><i class="fas fa-seedling"></i><h2>Hábito de Crescimento</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Formas de vida.</strong></div><div class="chart-container" id="habitoContainer"><canvas id="habitoChart"></canvas></div><button class="toggle-btn" onclick="toggleChartTable('habitoChart','habitoTable')">Alternar</button><div id="habitoTable" class="hidden"></div></div></div>
-        <div class="card" id="cardOrigem"><div class="card-header" onclick="toggleCard('cardOrigem')"><i class="fas fa-landmark"></i><h2>Herbário de Origem</h2><i class="fas fa-chevron-right collapse-icon"></i></div><div class="card-body"><div class="explanation-box"><strong>Registros e espécies por sigla.</strong></div><div class="chart-container" id="origemContainer"><canvas id="origemChart"></canvas></div><button class="toggle-btn" onclick="toggleChartTable('origemChart','origemTable')">Alternar</button><div id="origemTable" class="hidden"></div></div></div>
-    </div>
-    <button id="downloadBtn" class="btn btn-success btn-lg btn-block hidden"><i class="fas fa-file-excel"></i> Baixar Estatísticas em .xlsx</button>
-</main>
-<footer class="app-footer">
-    <div class="footer-content">
-        <div class="footer-section"><h3>Análise Botânica JABOT</h3><p>Ferramenta para análise exploratória de dados de coleções botânicas no formato JABOT</p></div>
-        <div class="footer-section"><h3>Funcionalidades</h3><p>Taxonomia • Hábito • Herbário de Origem • Raridade • Esforço amostral • Espacial • Completude</p></div>
-        <div class="footer-section"><h3>Contato</h3><p><i class="fab fa-github"></i> github.com/marlonroyer</p>
-	<p>Desenvolvido por Marlon Royer de Morais</p>
-	<p>Versão 2.0 (fase experimental)</p>
-</div>
-    </div>
-    <div class="footer-bottom"><p>&copy; 2026 Análise Botânica • Desenvolvido para processamento de dados do JABOT de uso interno do Herbário EVB</p></div>
-</footer>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-let dadosProcessados = null;
-let estatisticas = null;
-let charts = {};
-let mapInstance = null;
-let heatLayer = null;
-let currentMarkers = [];
+            <div class="card-body">
+                <div class="upload-area" id="uploadArea" role="button" tabindex="0">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                    <div class="upload-content">
+                        <i class="fas fa-table upload-icon" aria-hidden="true"></i>
+                        <p class="upload-text">Selecionar planilha</p>
+                        <p class="upload-subtext">Formatos aceitos: .xls e .xlsx</p>
+                        <button class="btn btn-primary" id="selectFileBtn" type="button">
+                            <i class="fas fa-folder-open" aria-hidden="true"></i>
+                            Selecionar Arquivo
+                        </button>
+                    </div>
+                </div>
+                <div class="status-indicator" id="statusPlanilha">
+                    <span class="status-icon"><i class="fas fa-circle" aria-hidden="true"></i></span>
+                    <span class="status-text" id="statusText">Nenhuma planilha selecionada</span>
+                </div>
+            </div>
+        </section>
 
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const statusPlanilha = document.getElementById('statusPlanilha');
-const statusText = document.getElementById('statusText');
-const spinnerOverlay = document.getElementById('spinnerOverlay');
-const errorMsg = document.getElementById('errorMsg');
-const errorText = document.getElementById('errorText');
-const resultsContainer = document.getElementById('resultsContainer');
-const summaryCards = document.getElementById('summaryCards');
-const downloadBtn = document.getElementById('downloadBtn');
-const heatmapToggle = document.getElementById('heatmapToggle');
-const heatSettings = document.getElementById('heatSettings');
-const heatRadius = document.getElementById('heatRadius');
-const heatBlur = document.getElementById('heatBlur');
-const radiusVal = document.getElementById('radiusVal');
-const blurVal = document.getElementById('blurVal');
+        <div class="spinner-overlay" id="spinnerOverlay">
+            <i class="fas fa-spinner spinner-icon" aria-hidden="true"></i>
+            <p class="spinner-text">Processando dados...</p>
+        </div>
 
-uploadArea.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', handleFileSelect);
-uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-uploadArea.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFileSelect(); }
-});
-downloadBtn.addEventListener('click', exportarXLSX);
+        <section id="resultsContainer" class="hidden">
+            <div class="toolbar">
+                <button class="btn btn-sm btn-primary" type="button" id="expandAllBtn">
+                    <i class="fas fa-expand-alt" aria-hidden="true"></i>
+                    Expandir todos
+                </button>
+                <button class="btn btn-sm btn-primary" type="button" id="collapseAllBtn">
+                    <i class="fas fa-compress-alt" aria-hidden="true"></i>
+                    Colapsar todos
+                </button>
+            </div>
 
-heatRadius.addEventListener('input', () => {
-    radiusVal.textContent = heatRadius.value;
-    if (heatLayer) heatLayer.setOptions({ radius: parseInt(heatRadius.value) });
-});
-heatBlur.addEventListener('input', () => {
-    blurVal.textContent = heatBlur.value;
-    if (heatLayer) heatLayer.setOptions({ blur: parseInt(heatBlur.value) });
-});
+            <section class="card expanded" id="cardResumo">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                    <h2>Resumo da Coleção</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-grid" id="summaryCards"></div>
+                </div>
+            </section>
 
-function toggleCard(cardId) {
-    const card = document.getElementById(cardId);
-    card.classList.toggle('expanded');
-    if (cardId === 'cardEspacial' && card.classList.contains('expanded') && mapInstance) {
-        setTimeout(() => mapInstance.invalidateSize(), 100);
-    }
-}
-function toggleAllCards(expand) {
-    document.querySelectorAll('.card[id^="card"]').forEach(card => {
-        if (expand) card.classList.add('expanded');
-        else card.classList.remove('expanded');
-    });
-    if (expand && mapInstance) setTimeout(() => mapInstance.invalidateSize(), 100);
-}
+            <div class="note">
+                <strong>Nota:</strong> a riqueza de espécies é calculada por binômio, usando <code>genus</code> + <code>sp1</code>. Coordenadas decimais ou GMS são convertidas automaticamente.
+            </div>
 
-function handleFileSelect() {
-    const file = fileInput.files[0];
-    if (!file) return;
-    errorMsg.style.display = 'none';
-    resultsContainer.classList.add('hidden');
-    downloadBtn.classList.add('hidden');
-    destruirGraficos();
-    if (!file.name.match(/\.xlsx?$/i)) { mostrarErro('Selecione .xlsx ou .xls'); return; }
-    statusPlanilha.classList.remove('success','error');
-    statusPlanilha.classList.add('success');
-    statusText.textContent = '📄 ' + file.name;
-    spinnerOverlay.classList.add('active');
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, {type:'array'});
-            const ws = wb.Sheets[wb.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(ws, {defval:'', raw:true});
-            if (!json.length) throw new Error('Planilha vazia.');
-            const cols = Object.keys(json[0]).map(c=>c.toLowerCase().trim());
-            const obrigatorias = ['family','genus','habito','sigla_colbot_origem'];
-            const falt = obrigatorias.filter(c=>!cols.includes(c));
-            if (falt.length) throw new Error('Colunas obrigatórias faltando: '+falt.join(', ')+'\nDetectadas: '+cols.join(', '));
-            const dados = json.map(row => { const novo={}; for(const[k,v]of Object.entries(row)) novo[k.toLowerCase().trim()]=v; return novo; });
-            dadosProcessados = dados;
-            processarEstatisticas(dados);
-            spinnerOverlay.classList.remove('active');
-            resultsContainer.classList.remove('hidden');
-            downloadBtn.classList.remove('hidden');
-            document.querySelectorAll('.card[id^="card"]').forEach(c => c.classList.remove('expanded'));
-            document.getElementById('cardResumo').classList.add('expanded');
-            resultsContainer.scrollIntoView({behavior:'smooth',block:'start'});
-        } catch(err) {
-            spinnerOverlay.classList.remove('active');
-            statusPlanilha.classList.add('error');
-            statusText.textContent = 'Erro ao processar';
-            mostrarErro(err.message);
+            <section class="card" id="cardTaxonomia">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-dna" aria-hidden="true"></i>
+                    <h2>Taxonomia</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body" id="taxonomiaContent"></div>
+            </section>
+
+            <section class="card" id="cardRaridade">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-gem" aria-hidden="true"></i>
+                    <h2>Raridade</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>O que mostra:</strong> quantas espécies aparecem com 1 registro, 2 registros, e assim por diante.</div>
+                    <div class="chart-container" id="raridadeContainer"><canvas id="raridadeChart"></canvas></div>
+                    <div id="raridadeTable"></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardEsforco">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                    <h2>Esforço Amostral Temporal</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Coletas por ano:</strong> intensidade de coleta. <strong>Coletas por mês:</strong> sazonalidade. <strong>Curva de acumulação:</strong> crescimento da riqueza observada ao longo do tempo.</div>
+                    <div class="chart-container" id="coletasAnoContainer"><canvas id="coletasAnoChart"></canvas></div>
+                    <div class="chart-container" id="coletasMesContainer"><canvas id="coletasMesChart"></canvas></div>
+                    <div class="chart-container" id="curvaAcumulacaoContainer"><canvas id="curvaAcumulacaoChart"></canvas></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardEspacial">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                    <h2>Distribuição Espacial</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Municípios/localidades mais amostrados</strong> e mapa interativo com camada de calor.</div>
+                    <div class="chart-container" id="municipioContainer"><canvas id="municipioChart"></canvas></div>
+                    <div class="chart-container" id="localidadeContainer"><canvas id="localidadeChart"></canvas></div>
+                    <div id="mapContainer"></div>
+                    <div class="map-controls">
+                        <label><input type="checkbox" id="heatmapToggle"> Mapa de calor</label>
+                        <div id="heatSettings" class="heat-settings hidden">
+                            <label>Raio: <input type="range" id="heatRadius" min="5" max="50" value="20" step="1"> <span id="radiusVal">20</span></label>
+                            <label>Suavização: <input type="range" id="heatBlur" min="5" max="30" value="15" step="1"> <span id="blurVal">15</span></label>
+                        </div>
+                        <button class="btn btn-sm btn-primary" id="downloadMapBtn" type="button">
+                            <i class="fas fa-download" aria-hidden="true"></i>
+                            Mapa PNG
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" id="cardCompletude">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                    <h2>Completude dos Dados</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Indicadores:</strong> registros com coordenadas válidas, data completa e determinador informado.</div>
+                    <div class="chart-container" id="completudeContainer"><canvas id="completudeChart"></canvas></div>
+                    <div id="completudeTable"></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardComparacao">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-balance-scale" aria-hidden="true"></i>
+                    <h2>Comparação entre Áreas</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Total de registros e espécies</strong> por <code>majorarea</code>.</div>
+                    <div id="comparacaoContent"></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardListaEspecies">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-list-alt" aria-hidden="true"></i>
+                    <h2>Lista de Espécies por Família</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Lista por família:</strong> espécies agrupadas por família com nome popular, hábito, número de registros e testemunhos associados.</div>
+                    <div class="toolbar species-export-toolbar">
+                        <button class="btn btn-sm btn-primary" type="button" data-export-family-list="csv">
+                            <i class="fas fa-table" aria-hidden="true"></i>
+                            Google Sheets CSV
+                        </button>
+                        <button class="btn btn-sm btn-primary" type="button" data-export-family-list="xlsx">
+                            <i class="fas fa-file-excel" aria-hidden="true"></i>
+                            Excel XLSX
+                        </button>
+                        <button class="btn btn-sm btn-primary" type="button" data-export-family-list="doc">
+                            <i class="fas fa-file-word" aria-hidden="true"></i>
+                            Word DOC
+                        </button>
+                        <button class="btn btn-sm btn-primary" type="button" data-export-family-list="html">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            Google Docs HTML
+                        </button>
+                    </div>
+                    <div id="listaEspeciesContent"></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardHabito">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-seedling" aria-hidden="true"></i>
+                    <h2>Hábito de Crescimento</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Formas de vida</strong> informadas na coluna <code>habito</code>.</div>
+                    <div class="chart-container" id="habitoContainer"><canvas id="habitoChart"></canvas></div>
+                    <button class="toggle-btn" type="button" data-toggle-view data-chart="habitoContainer" data-table="habitoTable">Ver tabela</button>
+                    <div id="habitoTable" class="hidden"></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardOrigem">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-landmark" aria-hidden="true"></i>
+                    <h2>Herbário de Origem</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Registros e espécies</strong> por <code>sigla_colbot_origem</code>.</div>
+                    <div class="chart-container" id="origemContainer"><canvas id="origemChart"></canvas></div>
+                    <button class="toggle-btn" type="button" data-toggle-view data-chart="origemContainer" data-table="origemTable">Ver tabela</button>
+                    <div id="origemTable" class="hidden"></div>
+                </div>
+            </section>
+
+            <section class="card" id="cardRelatorio">
+                <div class="card-header" data-toggle-card>
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                    <h2>Relatório Interpretativo</h2>
+                    <i class="fas fa-chevron-right collapse-icon" aria-hidden="true"></i>
+                </div>
+                <div class="card-body">
+                    <div class="explanation-box"><strong>Relatório automático:</strong> texto descritivo com os principais resultados e o significado de cada estatística calculada.</div>
+                    <div class="toolbar">
+                        <button class="btn btn-sm btn-primary" type="button" data-export-report="txt">
+                            <i class="fas fa-file-lines" aria-hidden="true"></i>
+                            TXT
+                        </button>
+                        <button class="btn btn-sm btn-primary" type="button" data-export-report="doc">
+                            <i class="fas fa-file-word" aria-hidden="true"></i>
+                            Word DOC
+                        </button>
+                        <button class="btn btn-sm btn-primary" type="button" data-export-report="html">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            Google Docs HTML
+                        </button>
+                    </div>
+                    <div class="report-box" id="reportContent"></div>
+                </div>
+            </section>
+        </section>
+
+        <button id="downloadBtn" class="btn btn-success btn-lg btn-block hidden" type="button">
+            <i class="fas fa-file-excel" aria-hidden="true"></i>
+            Baixar Estatísticas em .xlsx
+        </button>
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Análise Botânica</h3>
+                <p>Ferramenta para análise exploratória de dados de coleções botânicas no formato JABOT.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Funcionalidades</h3>
+                <p>Taxonomia, hábito, origem, raridade, esforço amostral, espacialidade e completude.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contato</h3>
+                <p><i class="fab fa-github" aria-hidden="true"></i> github.com/marlonroyer</p>
+		<p>Desenvolvido por Marlon Royer de Morais</p>
+		<p>Versão 1.3 (fase experimental)</p>
+
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Análise Botânica • Desenvolvido para processamento de dados do JABOT de uso interno do Herbário EVB</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const REQUIRED_COLUMNS = ['family', 'genus', 'habito', 'sigla_colbot_origem'];
+        const MAX_MAP_POINTS = 1200;
+
+        const state = {
+            rows: [],
+            stats: null,
+            charts: {},
+            map: null,
+            heatLayer: null,
+            markers: []
+        };
+
+        const els = {
+            uploadArea: document.getElementById('uploadArea'),
+            selectFileBtn: document.getElementById('selectFileBtn'),
+            fileInput: document.getElementById('fileInput'),
+            statusPlanilha: document.getElementById('statusPlanilha'),
+            statusText: document.getElementById('statusText'),
+            spinnerOverlay: document.getElementById('spinnerOverlay'),
+            errorMsg: document.getElementById('errorMsg'),
+            errorText: document.getElementById('errorText'),
+            resultsContainer: document.getElementById('resultsContainer'),
+            summaryCards: document.getElementById('summaryCards'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            expandAllBtn: document.getElementById('expandAllBtn'),
+            collapseAllBtn: document.getElementById('collapseAllBtn'),
+            heatmapToggle: document.getElementById('heatmapToggle'),
+            heatSettings: document.getElementById('heatSettings'),
+            heatRadius: document.getElementById('heatRadius'),
+            heatBlur: document.getElementById('heatBlur'),
+            radiusVal: document.getElementById('radiusVal'),
+            blurVal: document.getElementById('blurVal'),
+            downloadMapBtn: document.getElementById('downloadMapBtn')
+        };
+
+        document.addEventListener('DOMContentLoaded', init);
+
+        function init() {
+            document.querySelectorAll('[data-toggle-card]').forEach(header => {
+                header.addEventListener('click', () => toggleCard(header.closest('.card')));
+            });
+
+            document.querySelectorAll('[data-toggle-view]').forEach(button => {
+                button.addEventListener('click', () => toggleChartTable(button));
+            });
+
+            document.addEventListener('click', event => {
+                const button = event.target.closest('[data-download-chart]');
+                if (!button) return;
+                downloadChart(button.dataset.canvas, button.dataset.file);
+            });
+
+            document.addEventListener('click', event => {
+                const button = event.target.closest('[data-export-family-list]');
+                if (!button) return;
+                exportFamilySpeciesList(button.dataset.exportFamilyList);
+            });
+
+            document.addEventListener('click', event => {
+                const button = event.target.closest('[data-export-report]');
+                if (!button) return;
+                exportReport(button.dataset.exportReport);
+            });
+
+            els.uploadArea.addEventListener('click', () => els.fileInput.click());
+            els.uploadArea.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    els.fileInput.click();
+                }
+            });
+            els.selectFileBtn.addEventListener('click', event => {
+                event.stopPropagation();
+                els.fileInput.click();
+            });
+            els.fileInput.addEventListener('change', handleFileSelect);
+            els.uploadArea.addEventListener('dragover', handleDragOver);
+            els.uploadArea.addEventListener('dragleave', () => els.uploadArea.classList.remove('dragover'));
+            els.uploadArea.addEventListener('drop', handleDrop);
+            els.downloadBtn.addEventListener('click', exportWorkbook);
+            els.expandAllBtn.addEventListener('click', () => toggleAllCards(true));
+            els.collapseAllBtn.addEventListener('click', () => toggleAllCards(false));
+            els.heatmapToggle.addEventListener('change', toggleHeatmap);
+            els.heatRadius.addEventListener('input', updateHeatOptions);
+            els.heatBlur.addEventListener('input', updateHeatOptions);
+            els.downloadMapBtn.addEventListener('click', downloadMap);
         }
-    };
-    reader.onerror = ()=> { spinnerOverlay.classList.remove('active'); mostrarErro('Erro ao ler arquivo.'); };
-    reader.readAsArrayBuffer(file);
-}
 
-function processarEstatisticas(dados) {
-    const total = dados.length;
-    const famCount = {}; dados.forEach(d=>{ const f=(d.family||'').trim(); if(f) famCount[f]=(famCount[f]||0)+1; });
-    const famArray = Object.entries(famCount).sort((a,b)=>b[1]-a[1]);
-    const genCount = {}; dados.forEach(d=>{ const g=(d.genus||'').trim(); if(g) genCount[g]=(genCount[g]||0)+1; });
-    const genArray = Object.entries(genCount).sort((a,b)=>b[1]-a[1]);
-    const spCount = {}; dados.forEach(d=>{ const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s) spCount[g+' '+s]=(spCount[g+' '+s]||0)+1; });
-    const spArray = Object.entries(spCount).sort((a,b)=>b[1]-a[1]);
-    let idSp=0,idGen=0,idFam=0,comCF=0;
-    dados.forEach(d=>{ const g=(d.genus||'').trim(), s=(d.sp1||'').trim(), f=(d.family||'').trim(), cf=(d.cf||'').trim(); if(g&&s)idSp++; else if(g)idGen++; else if(f)idFam++; if(/^(cf|1|yes|sim)$/i.test(cf))comCF++; });
-    const habCount = {}; dados.forEach(d=>{ const h=(d.habito||'').trim()||'(não informado)'; habCount[h]=(habCount[h]||0)+1; });
-    const habArray = Object.entries(habCount).sort((a,b)=>b[1]-a[1]);
-    const siglaCount = {}, siglaSpSet = {};
-    dados.forEach(d=>{ const sig=(d.sigla_colbot_origem||'').trim()||'(não informado)'; siglaCount[sig]=(siglaCount[sig]||0)+1; if(!siglaSpSet[sig])siglaSpSet[sig]=new Set(); const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s)siglaSpSet[sig].add(g+' '+s); });
-    const siglaArray = Object.entries(siglaCount).map(([sig,c])=>[sig,c,siglaSpSet[sig]?siglaSpSet[sig].size:0]).sort((a,b)=>b[1]-a[1]);
-    const raridadeMap = {}; spArray.forEach(([_,c])=>{ raridadeMap[c]=(raridadeMap[c]||0)+1; });
-    const raridadeArray = Object.entries(raridadeMap).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
-    const anoCount = {}, mesCount = {};
-    dados.forEach(d=>{ const y=parseInt(d.collyy); if(y) anoCount[y]=(anoCount[y]||0)+1; const m=parseInt(d.collmm); if(m) mesCount[m]=(mesCount[m]||0)+1; });
-    const anoArray = Object.entries(anoCount).sort((a,b)=>a[0]-b[0]);
-    const mesArray = Object.entries(mesCount).sort((a,b)=>a[0]-b[0]);
-    const comData = dados.filter(d=>d.collyy!==''&&d.collmm!==''&&d.colldd!=='');
-    comData.sort((a,b)=>{ const da=new Date(parseInt(a.collyy),parseInt(a.collmm)-1,parseInt(a.colldd)||1); const db=new Date(parseInt(b.collyy),parseInt(b.collmm)-1,parseInt(b.colldd)||1); return da-db; });
-    const especiesVistas = new Set(); const curva = [];
-    comData.forEach(d=>{ const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s) especiesVistas.add(g+' '+s); curva.push(especiesVistas.size); });
-    const municipioCount = {}, localidadeCount = {};
-    dados.forEach(d=>{ const m=(d.majorarea||'').trim(); if(m) municipioCount[m]=(municipioCount[m]||0)+1; const l=(d.gazetteer||'').trim(); if(l) localidadeCount[l]=(localidadeCount[l]||0)+1; });
-    const municipioArray = Object.entries(municipioCount).sort((a,b)=>b[1]-a[1]);
-    const localidadeArray = Object.entries(localidadeCount).sort((a,b)=>b[1]-a[1]);
-    const pontos = dados.filter(d=>d.latitude!==''&&d.longitude!=='').map(d=>({lat:parseFloat(d.latitude),lng:parseFloat(d.longitude),nome:(d.genus||'')+' '+(d.sp1||'')}));
-    let comCoord=0, comDataCompleta=0, comDet=0;
-    dados.forEach(d=>{ if(d.latitude!==''&&d.longitude!=='')comCoord++; if(d.colldd!==''&&d.collmm!==''&&d.collyy!=='')comDataCompleta++; if((d.detby||'').trim()!=='')comDet++; });
-    const areaStats = {};
-    dados.forEach(d=>{ const area=(d.majorarea||'').trim()||'Não informado'; if(!areaStats[area])areaStats[area]={total:0,spSet:new Set()}; areaStats[area].total++; const g=(d.genus||'').trim(), s=(d.sp1||'').trim(); if(g&&s)areaStats[area].spSet.add(g+' '+s); });
-    const areaArray = Object.entries(areaStats).map(([a,o])=>[a,o.total,o.spSet.size]).sort((a,b)=>b[1]-a[1]);
-    estatisticas = { total, famArray, genArray, spArray, idSp, idGen, idFam, comCF, habArray, siglaArray, raridadeArray, anoArray, mesArray, curva, comData, municipioArray, localidadeArray, pontos, comCoord, comDataCompleta, comDet, areaArray };
-    renderizarCards(); renderizarTaxonomia(); renderizarRaridade(); renderizarEsforco(); renderizarEspacial(); renderizarCompletude(); renderizarComparacao(); renderizarHabito(); renderizarOrigem();
-}
+        function toggleCard(card) {
+            if (!card) return;
+            card.classList.toggle('expanded');
+            if (card.id === 'cardEspacial' && card.classList.contains('expanded') && state.map) {
+                setTimeout(() => state.map.invalidateSize(), 100);
+            }
+        }
 
-function adicionarBotaoDownload(containerId, canvasId, fileName) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const oldBtn = container.querySelector('.chart-download-btn');
-    if (oldBtn) oldBtn.remove();
-    const btn = document.createElement('button');
-    btn.className = 'chart-download-btn';
-    btn.innerHTML = '<i class="fas fa-download"></i> PNG';
-    btn.title = 'Baixar gráfico como imagem';
-    btn.onclick = () => downloadChart(canvasId, fileName);
-    container.appendChild(btn);
-}
-function downloadChart(canvasId, fileName) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const link = document.createElement('a');
-    link.download = (fileName || 'grafico') + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-}
-function renderizarCards() {
-    const s = estatisticas;
-    summaryCards.innerHTML = `
-        <div class="summary-card"><div class="summary-value">${s.total.toLocaleString()}</div><div class="summary-label">Registros</div></div>
-        <div class="summary-card"><div class="summary-value">${s.famArray.length.toLocaleString()}</div><div class="summary-label">Famílias</div></div>
-        <div class="summary-card"><div class="summary-value">${s.genArray.length.toLocaleString()}</div><div class="summary-label">Gêneros</div></div>
-        <div class="summary-card"><div class="summary-value">${s.spArray.length.toLocaleString()}</div><div class="summary-label">Espécies</div></div>
-        <div class="summary-card"><div class="summary-value">${s.siglaArray.filter(a=>a[0]!=='(não informado)').length.toLocaleString()}</div><div class="summary-label">Herbários</div></div>
-        <div class="summary-card"><div class="summary-value">${s.comCF.toLocaleString()}</div><div class="summary-label">Com "cf"</div></div>`;
-}
-function renderizarTaxonomia() {
-    const s=estatisticas;
-    const pctSp=s.total>0?((s.idSp/s.total)*100).toFixed(1):0, pctGen=s.total>0?((s.idGen/s.total)*100).toFixed(1):0, pctFam=s.total>0?((s.idFam/s.total)*100).toFixed(1):0;
-    document.getElementById('taxonomiaContent').innerHTML = `
-        <div class="explanation-box"><strong>Composição e diversidade taxonômica:</strong> Frequência das famílias, gêneros e espécies mais representados, riqueza total e nível de identificação dos registros.</div>
-        <p style="margin-bottom:1rem;color:var(--gray-600)"><strong>Identificação:</strong> ${s.idSp} até sp (${pctSp}%) · ${s.idGen} até gênero (${pctGen}%) · ${s.idFam} até família (${pctFam}%) · ${s.comCF} com cf</p>
-        <h3><i class="fas fa-sitemap"></i> Top 10 Famílias <button class="chart-download-btn" onclick="downloadChart('famChart','top10_familias')"><i class="fas fa-download"></i> PNG</button></h3><div class="chart-container"><canvas id="famChart"></canvas></div><div id="famTable"></div>
-        <h3><i class="fas fa-leaf"></i> Top 10 Gêneros <button class="chart-download-btn" onclick="downloadChart('genChart','top10_generos')"><i class="fas fa-download"></i> PNG</button></h3><div class="chart-container"><canvas id="genChart"></canvas></div><div id="genTable"></div>
-        <h3><i class="fas fa-tree"></i> Top 10 Espécies <button class="chart-download-btn" onclick="downloadChart('spChart','top10_especies')"><i class="fas fa-download"></i> PNG</button></h3><div class="chart-container"><canvas id="spChart"></canvas></div><div id="spTable"></div>`;
-    criarGraficoBarras('famChart', s.famArray.slice(0,10)); criarTabela('famTable', s.famArray, s.total, 'Família');
-    criarGraficoBarras('genChart', s.genArray.slice(0,10)); criarTabela('genTable', s.genArray, s.total, 'Gênero');
-    criarGraficoBarras('spChart', s.spArray.slice(0,10)); criarTabela('spTable', s.spArray, s.total, 'Espécie');
-}
-function renderizarRaridade() {
-    criarGraficoBarras('raridadeChart', estatisticas.raridadeArray);
-    adicionarBotaoDownload('raridadeContainer', 'raridadeChart', 'raridade');
-    criarTabelaRaridade('raridadeTable', estatisticas.raridadeArray);
-}
-function renderizarEsforco() {
-    criarGraficoBarras('coletasAnoChart', estatisticas.anoArray);
-    adicionarBotaoDownload('coletasAnoContainer', 'coletasAnoChart', 'coletas_por_ano');
-    criarGraficoBarras('coletasMesChart', estatisticas.mesArray.map(([m,c])=>[['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m-1],c]));
-    adicionarBotaoDownload('coletasMesContainer', 'coletasMesChart', 'coletas_por_mes');
-    if (estatisticas.curva.length) {
-        const ctx=document.getElementById('curvaAcumulacaoChart').getContext('2d');
-        if(charts['curvaAcumulacaoChart'])charts['curvaAcumulacaoChart'].destroy();
-        charts['curvaAcumulacaoChart']=new Chart(ctx,{type:'line',data:{labels:Array.from({length:estatisticas.curva.length},(_,i)=>i+1),datasets:[{label:'Espécies acumuladas',data:estatisticas.curva,borderColor:'#e67e22',backgroundColor:'rgba(230,126,34,0.1)',fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
-        adicionarBotaoDownload('curvaAcumulacaoContainer', 'curvaAcumulacaoChart', 'curva_acumulacao');
-    }
-}
-function renderizarEspacial() {
-    criarGraficoBarrasHorizontal('municipioChart', estatisticas.municipioArray.slice(0,15));
-    adicionarBotaoDownload('municipioContainer', 'municipioChart', 'municipios');
-    criarGraficoBarrasHorizontal('localidadeChart', estatisticas.localidadeArray.slice(0,15));
-    adicionarBotaoDownload('localidadeContainer', 'localidadeChart', 'localidades');
-    const mapDiv=document.getElementById('mapContainer');
-    if(mapInstance){mapInstance.remove();mapInstance=null;}
-    if(estatisticas.pontos.length&&typeof L!=='undefined'){
-        mapInstance=L.map(mapDiv).setView([-25.44,-54.58],10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap'}).addTo(mapInstance);
-        currentMarkers=[];
-        estatisticas.pontos.slice(0,500).forEach(p=>{const m=L.marker([p.lat,p.lng]).bindPopup(p.nome);m.addTo(mapInstance);currentMarkers.push(m);});
-        if(heatLayer){mapInstance.removeLayer(heatLayer);heatLayer=null;}
-        heatmapToggle.checked=false;heatSettings.classList.add('hidden');
-        heatmapToggle.onchange=toggleHeatmap;
-        setTimeout(()=>mapInstance.invalidateSize(),100);
-    }
-}
-function toggleHeatmap() {
-    if(!mapInstance||!estatisticas||!estatisticas.pontos.length)return;
-    if(heatmapToggle.checked){
-        heatSettings.classList.remove('hidden');
-        currentMarkers.forEach(m=>mapInstance.removeLayer(m));
-        if(heatLayer)mapInstance.removeLayer(heatLayer);
-        const r=parseInt(heatRadius.value), b=parseInt(heatBlur.value);
-        const heatData=estatisticas.pontos.slice(0,500).map(p=>[p.lat,p.lng,0.5]);
-        heatLayer=L.heatLayer(heatData,{radius:r,blur:b,maxZoom:10}).addTo(mapInstance);
-    }else{
-        heatSettings.classList.add('hidden');
-        if(heatLayer){mapInstance.removeLayer(heatLayer);heatLayer=null;}
-        currentMarkers.forEach(m=>m.addTo(mapInstance));
-    }
-}
-function renderizarCompletude() {
-    const s=estatisticas;
-    const cp=((s.comCoord/s.total)*100).toFixed(1), sc=s.total-s.comCoord, sp=((sc/s.total)*100).toFixed(1);
-    const ctx=document.getElementById('completudeChart').getContext('2d');
-    if(charts['completudeChart'])charts['completudeChart'].destroy();
-    charts['completudeChart']=new Chart(ctx,{type:'doughnut',data:{labels:['Com coordenadas','Sem coordenadas'],datasets:[{data:[s.comCoord,sc],backgroundColor:['#27ae60','#e74c3c']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
-    adicionarBotaoDownload('completudeContainer','completudeChart','completude');
-    document.getElementById('completudeTable').innerHTML=`<table class="stats-table"><thead><tr><th>Indicador</th><th class="num">Total</th><th class="num">%</th><th class="num">Faltante</th></tr></thead><tbody>
-        <tr><td>Coordenadas</td><td class="num">${s.comCoord}</td><td class="pct">${cp}%</td><td class="num">${sc} (${sp}%)</td></tr>
-        <tr><td>Data completa</td><td class="num">${s.comDataCompleta}</td><td class="pct">${((s.comDataCompleta/s.total)*100).toFixed(1)}%</td><td class="num">${s.total-s.comDataCompleta}</td></tr>
-        <tr><td>Determinador</td><td class="num">${s.comDet}</td><td class="pct">${((s.comDet/s.total)*100).toFixed(1)}%</td><td class="num">${s.total-s.comDet}</td></tr></tbody></table>`;
-}
-function renderizarComparacao() {
-    let html='<table class="stats-table"><thead><tr><th>Área</th><th class="num">Registros</th><th class="num">Espécies</th></tr></thead><tbody>';
-    estatisticas.areaArray.forEach(([n,t,sp])=>html+=`<tr><td>${escapeHTML(n)}</td><td class="num">${t}</td><td class="num">${sp}</td></tr>`);
-    html+='</tbody></table>';document.getElementById('comparacaoContent').innerHTML=html;
-}
-function renderizarHabito() {
-    criarGraficoPizza('habitoChart',estatisticas.habArray);adicionarBotaoDownload('habitoContainer','habitoChart','habito');
-    criarTabela('habitoTable',estatisticas.habArray,estatisticas.total,'Hábito');
-}
-function renderizarOrigem() {
-    criarGraficoBarrasHorizontal('origemChart',estatisticas.siglaArray.slice(0,15));adicionarBotaoDownload('origemContainer','origemChart','herbario_origem');
-    criarTabelaOrigem('origemTable',estatisticas.siglaArray,estatisticas.total);
-}
-function destruirGraficos(){Object.values(charts).forEach(c=>c.destroy());charts={};}
-function criarGraficoBarras(canvasId,dadosArray){
-    const canvas=document.getElementById(canvasId);if(!canvas)return;
-    const ctx=canvas.getContext('2d');if(charts[canvasId])charts[canvasId].destroy();
-    charts[canvasId]=new Chart(ctx,{type:'bar',data:{labels:dadosArray.map(d=>d[0]),datasets:[{data:dadosArray.map(d=>d[1]),backgroundColor:'#e67e22',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-}
-function criarGraficoBarrasHorizontal(canvasId,dadosArray){
-    const canvas=document.getElementById(canvasId);if(!canvas)return;
-    const ctx=canvas.getContext('2d');if(charts[canvasId])charts[canvasId].destroy();
-    charts[canvasId]=new Chart(ctx,{type:'bar',indexAxis:'y',data:{labels:dadosArray.map(d=>d[0]),datasets:[{data:dadosArray.map(d=>d[1]),backgroundColor:'#f39c12',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-}
-function criarGraficoPizza(canvasId,dadosArray){
-    const canvas=document.getElementById(canvasId);if(!canvas)return;
-    const ctx=canvas.getContext('2d');if(charts[canvasId])charts[canvasId].destroy();
-    const cores=['#1a5276','#2980b9','#2c6faa','#3498db','#5dade2','#e67e22','#f39c12','#d35400','#f1c40f','#e74c3c'];
-    charts[canvasId]=new Chart(ctx,{type:'pie',data:{labels:dadosArray.map(d=>d[0]),datasets:[{data:dadosArray.map(d=>d[1]),backgroundColor:cores.slice(0,dadosArray.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}});
-}
-function criarTabela(divId,array,total,coluna){
-    const div=document.getElementById(divId);if(!div)return;
-    let html=`<table class="stats-table"><thead><tr><th>${coluna}</th><th class="num">Contagem</th><th class="num">%</th></tr></thead><tbody>`;
-    array.forEach(([n,c])=>html+=`<tr><td>${escapeHTML(n)}</td><td class="num">${c}</td><td class="pct">${((c/total)*100).toFixed(1)}%</td></tr>`);
-    html+='</tbody></table>';div.innerHTML=html;
-}
-function criarTabelaOrigem(divId,array,total){
-    const div=document.getElementById(divId);if(!div)return;
-    let html=`<table class="stats-table"><thead><tr><th>Sigla</th><th class="num">Registros</th><th class="num">%</th><th class="num">Espécies dist.</th></tr></thead><tbody>`;
-    array.forEach(([sig,c,esp])=>html+=`<tr><td><strong>${escapeHTML(sig)}</strong></td><td class="num">${c}</td><td class="pct">${((c/total)*100).toFixed(1)}%</td><td class="num">${esp}</td></tr>`);
-    html+='</tbody></table>';div.innerHTML=html;
-}
-function criarTabelaRaridade(divId,array){
-    const div=document.getElementById(divId);if(!div)return;
-    let html=`<table class="stats-table"><thead><tr><th>Nº registros</th><th class="num">Espécies</th></tr></thead><tbody>`;
-    array.forEach(([n,c])=>html+=`<tr><td>${n}</td><td class="num">${c}</td></tr>`);
-    html+='</tbody></table>';div.innerHTML=html;
-}
-function toggleChartTable(chartId,tableId){
-    const c=document.getElementById(chartId),t=document.getElementById(tableId);
-    if(!c||!t)return;const p=c.parentElement;
-    if(p.style.display==='none'){p.style.display='block';t.classList.add('hidden');}
-    else{p.style.display='none';t.classList.remove('hidden');}
-}
-function downloadMap(){
-    const mapElement=document.getElementById('mapContainer');
-    if(!mapElement)return;
-    html2canvas(mapElement,{useCORS:true,scale:2}).then(canvas=>{
-        const link=document.createElement('a');
-        link.download='mapa_botanico.png';
-        link.href=canvas.toDataURL('image/png');
-        link.click();
-    });
-}
-function exportarXLSX(){
-    if(!estatisticas)return;
-    const s=estatisticas,wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Métrica','Valor'],['Total',s.total],['Famílias',s.famArray.length],['Gêneros',s.genArray.length],['Espécies',s.spArray.length]]),'Resumo');
-    const add=(n,c,d)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([c,...d]),n);
-    add('Raridade',['Registros','Espécies'],s.raridadeArray.map(([n,c])=>[n,c]));
-    add('Coletas/Ano',['Ano','Coletas'],s.anoArray.map(([a,c])=>[a,c]));
-    add('Coletas/Mês',['Mês','Coletas'],s.mesArray.map(([m,c])=>[['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m-1],c]));
-    add('Completude',['Indicador','Registros','%','Faltante'],[['Coordenadas',s.comCoord,((s.comCoord/s.total)*100).toFixed(1)+'%',s.total-s.comCoord],['Data',s.comDataCompleta,((s.comDataCompleta/s.total)*100).toFixed(1)+'%',s.total-s.comDataCompleta],['Determinador',s.comDet,((s.comDet/s.total)*100).toFixed(1)+'%',s.total-s.comDet]]);
-    add('Áreas',['Área','Registros','Espécies'],s.areaArray.map(([a,t,sp])=>[a,t,sp]));
-    XLSX.writeFile(wb,'estatisticas_botanicas_completo.xlsx');
-}
-function mostrarErro(msg){errorText.textContent=msg;errorMsg.style.display='flex';}
-function escapeHTML(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-</script>
+        function toggleAllCards(expand) {
+            document.querySelectorAll('#resultsContainer .card').forEach(card => {
+                card.classList.toggle('expanded', expand);
+            });
+            if (expand && state.map) setTimeout(() => state.map.invalidateSize(), 100);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            els.uploadArea.classList.add('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            els.uploadArea.classList.remove('dragover');
+            if (!event.dataTransfer.files.length) return;
+            els.fileInput.files = event.dataTransfer.files;
+            handleFileSelect();
+        }
+
+        function handleFileSelect() {
+            const file = els.fileInput.files[0];
+            if (!file) return;
+
+            resetUiForImport();
+
+            if (!/\.xlsx?$/i.test(file.name)) {
+                showError('Selecione um arquivo .xls ou .xlsx.');
+                return;
+            }
+
+            setStatus('success', 'Arquivo selecionado: ' + file.name);
+            els.spinnerOverlay.classList.add('active');
+
+            const reader = new FileReader();
+            reader.onload = event => {
+                try {
+                    const rows = readWorkbook(event.target.result);
+                    state.rows = rows;
+                    state.stats = buildStats(rows);
+                    renderAll();
+                    finishImport();
+                } catch (error) {
+                    els.spinnerOverlay.classList.remove('active');
+                    setStatus('error', 'Erro ao processar a planilha');
+                    showError(error.message);
+                }
+            };
+            reader.onerror = () => {
+                els.spinnerOverlay.classList.remove('active');
+                setStatus('error', 'Erro ao ler o arquivo');
+                showError('Não foi possível ler o arquivo selecionado.');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function resetUiForImport() {
+            hideError();
+            destroyCharts();
+            destroyMap();
+            els.resultsContainer.classList.add('hidden');
+            els.downloadBtn.classList.add('hidden');
+        }
+
+        function finishImport() {
+            els.spinnerOverlay.classList.remove('active');
+            els.resultsContainer.classList.remove('hidden');
+            els.downloadBtn.classList.remove('hidden');
+            document.querySelectorAll('#resultsContainer .card').forEach(card => card.classList.remove('expanded'));
+            document.getElementById('cardResumo').classList.add('expanded');
+            els.resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function readWorkbook(buffer) {
+            const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: true });
+            if (!rawRows.length) throw new Error('A planilha está vazia.');
+
+            const rows = rawRows.map(normalizeRow);
+            const columns = Object.keys(rows[0] || {});
+            const missing = REQUIRED_COLUMNS.filter(column => !columns.includes(column));
+            if (missing.length) {
+                throw new Error('Colunas obrigatórias faltando: ' + missing.join(', ') + '\nColunas detectadas: ' + columns.join(', '));
+            }
+            return rows;
+        }
+
+        function normalizeRow(row) {
+            const normalized = {};
+            Object.entries(row).forEach(([key, value]) => {
+                normalized[String(key).toLowerCase().trim()] = value;
+            });
+            return normalized;
+        }
+
+        function buildStats(rows) {
+            const total = rows.length;
+            const familyCounts = countBy(rows, row => clean(row.family));
+            const genusCounts = countBy(rows, row => clean(row.genus));
+            const speciesCounts = countBy(rows, getSpeciesName);
+            const habitCounts = countBy(rows, row => clean(row.habito) || '(não informado)');
+            const yearCounts = countBy(rows, row => validYear(row.collyy));
+            const monthCounts = countBy(rows, row => validMonth(row.collmm));
+            const municipalityCounts = countBy(rows, row => clean(row.majorarea));
+            const localityCounts = countBy(rows, row => clean(row.gazetteer));
+
+            const siglaStats = buildOriginStats(rows);
+            const identification = buildIdentificationStats(rows);
+            const datedRows = rowsWithCompleteDates(rows);
+            const accumulation = buildAccumulationCurve(datedRows);
+            const points = buildMapPoints(rows);
+            const areaStats = buildAreaStats(rows);
+            const familySpecies = buildFamilySpecies(rows);
+            const rarity = buildRarity(toSortedArray(speciesCounts));
+
+            return {
+                total,
+                families: toSortedArray(familyCounts),
+                genera: toSortedArray(genusCounts),
+                species: toSortedArray(speciesCounts),
+                habits: toSortedArray(habitCounts),
+                origins: siglaStats,
+                rarity,
+                years: toSortedArray(yearCounts, 'ascNumeric'),
+                months: toSortedArray(monthCounts, 'ascNumeric'),
+                municipalities: toSortedArray(municipalityCounts),
+                localities: toSortedArray(localityCounts),
+                datedRows,
+                accumulation,
+                points,
+                areas: areaStats,
+                familySpecies,
+                identification,
+                completeness: {
+                    coordinates: points.length,
+                    completeDates: rows.filter(hasCompleteDate).length,
+                    determiners: rows.filter(row => clean(row.detby)).length
+                }
+            };
+        }
+
+        function countBy(rows, getter) {
+            return rows.reduce((acc, row) => {
+                const key = getter(row);
+                if (key !== null && key !== undefined && key !== '') acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+        }
+
+        function toSortedArray(map, mode = 'descCount') {
+            const entries = Object.entries(map);
+            if (mode === 'ascNumeric') return entries.sort((a, b) => Number(a[0]) - Number(b[0]));
+            return entries.sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])));
+        }
+
+        function buildOriginStats(rows) {
+            const counts = {};
+            const speciesByOrigin = {};
+            rows.forEach(row => {
+                const origin = clean(row.sigla_colbot_origem) || '(não informado)';
+                counts[origin] = (counts[origin] || 0) + 1;
+                if (!speciesByOrigin[origin]) speciesByOrigin[origin] = new Set();
+                const species = getSpeciesName(row);
+                if (species) speciesByOrigin[origin].add(species);
+            });
+            return Object.entries(counts)
+                .map(([origin, count]) => [origin, count, speciesByOrigin[origin].size])
+                .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+        }
+
+        function buildIdentificationStats(rows) {
+            return rows.reduce((acc, row) => {
+                const family = clean(row.family);
+                const genus = clean(row.genus);
+                const species = clean(row.sp1);
+                const cf = clean(row.cf);
+                if (genus && species) acc.species += 1;
+                else if (genus) acc.genus += 1;
+                else if (family) acc.family += 1;
+                if (/cf\.?/i.test(cf)) acc.cf += 1;
+                return acc;
+            }, { species: 0, genus: 0, family: 0, cf: 0 });
+        }
+
+        function rowsWithCompleteDates(rows) {
+            return rows
+                .filter(hasCompleteDate)
+                .slice()
+                .sort((a, b) => getRowDate(a) - getRowDate(b));
+        }
+
+        function buildAccumulationCurve(rows) {
+            const seen = new Set();
+            return rows.map(row => {
+                const species = getSpeciesName(row);
+                if (species) seen.add(species);
+                return seen.size;
+            });
+        }
+
+        function buildRarity(speciesArray) {
+            const rarity = {};
+            speciesArray.forEach(([, count]) => {
+                rarity[count] = (rarity[count] || 0) + 1;
+            });
+            return toSortedArray(rarity, 'ascNumeric');
+        }
+
+        function buildMapPoints(rows) {
+            return rows.reduce((points, row) => {
+                const lat = getCoordinate(row, 'latitude', 'lat_grau', 'lat_min', 'lat_seg', 'ns');
+                const lng = getCoordinate(row, 'longitude', 'long_grau', 'long_min', 'long_seg', 'ew');
+                if (isValidLatLng(lat, lng)) {
+                    points.push({
+                        lat,
+                        lng,
+                        name: getSpeciesName(row) || 'Registro',
+                        municipality: clean(row.majorarea),
+                        locality: clean(row.gazetteer)
+                    });
+                }
+                return points;
+            }, []);
+        }
+
+        function buildAreaStats(rows) {
+            const stats = {};
+            rows.forEach(row => {
+                const area = clean(row.majorarea) || 'Não informado';
+                if (!stats[area]) stats[area] = { total: 0, species: new Set() };
+                stats[area].total += 1;
+                const species = getSpeciesName(row);
+                if (species) stats[area].species.add(species);
+            });
+            return Object.entries(stats)
+                .map(([area, data]) => [area, data.total, data.species.size])
+                .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+        }
+
+        function buildFamilySpecies(rows) {
+            const families = {};
+            rows.forEach(row => {
+                const family = clean(row.family);
+                const speciesName = getSpeciesName(row);
+                if (!family || !speciesName) return;
+
+                if (!families[family]) families[family] = {};
+                if (!families[family][speciesName]) {
+                    families[family][speciesName] = {
+                        species: speciesName,
+                        author: clean(row.author1),
+                        popularNames: new Set(),
+                        habits: new Set(),
+                        vouchers: new Set(),
+                        count: 0
+                    };
+                }
+
+                const item = families[family][speciesName];
+                item.count += 1;
+                item.author = item.author || clean(row.author1);
+                addIfFilled(item.popularNames, clean(row.vernacular));
+                addIfFilled(item.habits, clean(row.habito));
+                addIfFilled(item.vouchers, clean(row.numtombo));
+            });
+
+            return Object.entries(families)
+                .map(([family, speciesMap]) => {
+                    const species = Object.values(speciesMap)
+                        .map(item => ({
+                            species: item.species,
+                            author: item.author,
+                            popularName: joinSet(item.popularNames),
+                            habit: joinSet(item.habits),
+                            count: item.count,
+                            vouchers: joinSet(item.vouchers)
+                        }));
+
+                    return {
+                        family,
+                        species,
+                        richness: species.length,
+                        records: species.reduce((sum, item) => sum + item.count, 0)
+                    };
+                })
+                .sort((a, b) => a.family.localeCompare(b.family));
+        }
+
+        function renderAll() {
+            renderSummary();
+            renderTaxonomy();
+            renderRarity();
+            renderSamplingEffort();
+            renderSpatial();
+            renderCompleteness();
+            renderAreaComparison();
+            renderFamilySpecies();
+            renderHabit();
+            renderOrigin();
+            renderReport();
+        }
+
+        function renderSummary() {
+            const s = state.stats;
+            els.summaryCards.innerHTML = [
+                summaryCard(s.total, 'Registros'),
+                summaryCard(s.families.length, 'Famílias'),
+                summaryCard(s.genera.length, 'Gêneros'),
+                summaryCard(s.species.length, 'Espécies'),
+                summaryCard(s.origins.filter(item => item[0] !== '(não informado)').length, 'Herbários'),
+                summaryCard(s.identification.cf, 'Com cf')
+            ].join('');
+        }
+
+        function renderTaxonomy() {
+            const s = state.stats;
+            const pctSpecies = percentage(s.identification.species, s.total);
+            const pctGenus = percentage(s.identification.genus, s.total);
+            const pctFamily = percentage(s.identification.family, s.total);
+
+            document.getElementById('taxonomiaContent').innerHTML = `
+                <div class="explanation-box"><strong>Composição e diversidade taxonômica:</strong> famílias, gêneros e espécies mais representados, riqueza total e nível de identificação.</div>
+                <p style="margin-bottom:1rem;color:var(--muted)">
+                    <strong>Identificação:</strong>
+                    ${s.identification.species} até espécie (${pctSpecies}%) -
+                    ${s.identification.genus} até gênero (${pctGenus}%) -
+                    ${s.identification.family} até família (${pctFamily}%) -
+                    ${s.identification.cf} com cf
+                </p>
+                ${chartSection('Top 10 Famílias', 'famChart', 'famTable', 'top10_familias')}
+                ${chartSection('Top 10 Gêneros', 'genChart', 'genTable', 'top10_generos')}
+                ${chartSection('Top 10 Espécies', 'spChart', 'spTable', 'top10_especies')}
+            `;
+
+            createBarChart('famChart', s.families.slice(0, 10));
+            createTable('famTable', s.families, s.total, 'Família');
+            createBarChart('genChart', s.genera.slice(0, 10));
+            createTable('genTable', s.genera, s.total, 'Gênero');
+            createBarChart('spChart', s.species.slice(0, 10));
+            createTable('spTable', s.species, s.total, 'Espécie');
+        }
+
+        function renderRarity() {
+            createBarChart('raridadeChart', state.stats.rarity);
+            addDownloadButton('raridadeContainer', 'raridadeChart', 'raridade');
+            createRarityTable('raridadeTable', state.stats.rarity);
+        }
+
+        function renderSamplingEffort() {
+            const s = state.stats;
+            createBarChart('coletasAnoChart', s.years);
+            addDownloadButton('coletasAnoContainer', 'coletasAnoChart', 'coletas_por_ano');
+            createBarChart('coletasMesChart', s.months.map(([month, count]) => [MONTHS[Number(month) - 1], count]));
+            addDownloadButton('coletasMesContainer', 'coletasMesChart', 'coletas_por_mes');
+            createLineChart('curvaAcumulacaoChart', s.accumulation);
+            addDownloadButton('curvaAcumulacaoContainer', 'curvaAcumulacaoChart', 'curva_acumulacao');
+        }
+
+        function renderSpatial() {
+            const s = state.stats;
+            createHorizontalBarChart('municipioChart', s.municipalities.slice(0, 15));
+            addDownloadButton('municipioContainer', 'municipioChart', 'municipios');
+            createHorizontalBarChart('localidadeChart', s.localities.slice(0, 15));
+            addDownloadButton('localidadeContainer', 'localidadeChart', 'localidades');
+            renderMap();
+        }
+
+        function renderCompleteness() {
+            const s = state.stats;
+            const total = s.total;
+            const withCoords = s.completeness.coordinates;
+            const withoutCoords = total - withCoords;
+            const completeDates = s.completeness.completeDates;
+            const determiners = s.completeness.determiners;
+
+            createDoughnutChart('completudeChart', ['Com coordenadas', 'Sem coordenadas'], [withCoords, withoutCoords], ['#27ae60', '#c0392b']);
+            addDownloadButton('completudeContainer', 'completudeChart', 'completude');
+
+            document.getElementById('completudeTable').innerHTML = `
+                <table class="stats-table">
+                    <thead><tr><th>Indicador</th><th class="num">Total</th><th class="num">%</th><th class="num">Faltante</th></tr></thead>
+                    <tbody>
+                        ${completenessRow('Coordenadas válidas', withCoords, total)}
+                        ${completenessRow('Data completa', completeDates, total)}
+                        ${completenessRow('Determinador', determiners, total)}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderAreaComparison() {
+            document.getElementById('comparacaoContent').innerHTML = tableFromRows(
+                ['Área', 'Registros', 'Espécies'],
+                state.stats.areas.map(([area, total, species]) => [area, total, species]),
+                [false, true, true]
+            );
+        }
+
+        function renderFamilySpecies() {
+            const rows = state.stats.familySpecies.flatMap(family => {
+                return family.species.map((item, index) => `
+                    <tr>
+                        <td>${index === 0 ? escapeHTML(family.family) : ''}</td>
+                        <td>${formatSpeciesHTML(item)}</td>
+                        <td>${escapeHTML(item.popularName)}</td>
+                        <td>${escapeHTML(item.habit)}</td>
+                        <td class="num"><em>${item.count}</em></td>
+                        <td>${escapeHTML(item.vouchers)}</td>
+                    </tr>
+                `);
+            }).join('');
+
+            document.getElementById('listaEspeciesContent').innerHTML = rows ? `
+                <div class="species-list-wrap">
+                    <table class="stats-table species-list-table">
+                        <thead>
+                            <tr>
+                                <th>Família</th>
+                                <th>Espécie</th>
+                                <th>Nome popular</th>
+                                <th>Hábito</th>
+                                <th class="num"><em>N</em></th>
+                                <th>nº Testemunho</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot><tr><td colspan="6"></td></tr></tfoot>
+                    </table>
+                </div>
+            ` : '<p style="color:var(--muted)">Nenhum dado disponível.</p>';
+        }
+
+        function renderHabit() {
+            createPieChart('habitoChart', state.stats.habits);
+            addDownloadButton('habitoContainer', 'habitoChart', 'habito');
+            createTable('habitoTable', state.stats.habits, state.stats.total, 'Hábito');
+        }
+
+        function renderOrigin() {
+            createHorizontalBarChart('origemChart', state.stats.origins.slice(0, 15));
+            addDownloadButton('origemContainer', 'origemChart', 'herbario_origem');
+            createOriginTable('origemTable', state.stats.origins, state.stats.total);
+        }
+
+        function renderReport() {
+            document.getElementById('reportContent').innerHTML = buildReportHTML();
+        }
+
+        function buildReportSections() {
+            return buildReportText()
+                .split('\n## ')
+                .filter(Boolean)
+                .map((section, index) => {
+                    const text = index === 0 ? section : '## ' + section;
+                    const title = (text.match(/^#+\s+(.+)$/m) || [null, 'Relatório'])[1];
+                    return { title, paragraphs: [text] };
+                });
+        }
+
+        function buildReportHTML() {
+            return markdownReportToHTML(buildReportText());
+        }
+
+        function buildReportText() {
+            const s = state.stats;
+            const m = buildReportMetrics(s);
+            return `# RELATÓRIO DE ANÁLISE EXPLORATÓRIA DE DADOS BOTÂNICOS
+## Coleção analisada a partir do formato JABOT
+
+---
+
+## 1. SÍNTESE GERAL DA COLEÇÃO
+
+A planilha analisada contém **${formatNumber(s.total)}** registros botânicos. A riqueza taxonômica observada inclui **${formatNumber(s.families.length)}** famílias, **${formatNumber(s.genera.length)}** gêneros e **${formatNumber(s.species.length)}** espécies identificadas por binômio (combinação dos campos \`genus\` e \`sp1\`). A contagem por binômio, sem inclusão da autoria, foi adotada para evitar duplicações decorrentes de variações na grafia dos autores, como presença ou ausência de espaços, pontos ou abreviaturas divergentes.
+
+A densidade média é de **${m.meanRecordsPerSpecies}** registros por espécie, e a mediana é de **${m.medianRecordsPerSpecies}**. Esses valores indicam se a abundância está concentrada em poucas espécies comuns (média muito maior que a mediana) ou se há distribuição mais uniforme dos registros entre as espécies. ${m.meanMedianInterpretation}
+
+Do total de registros, **${formatNumber(s.identification.species)}** (${percentage(s.identification.species, s.total)}%) estão identificados até o nível de espécie, **${formatNumber(s.identification.genus)}** (${percentage(s.identification.genus, s.total)}%) até gênero e **${formatNumber(s.identification.family)}** (${percentage(s.identification.family, s.total)}%) apenas até família. Registros com identificação incompleta representam oportunidades para futura determinação taxonômica.
+
+---
+
+## 2. COMPOSIÇÃO TAXONÔMICA
+
+### 2.1 Famílias mais representadas
+
+A distribuição de registros por família mostra que ${describeRankList(s.families, s.total, 'família', 4)}. As dez famílias mais abundantes concentram **${sumTopPct(s.families, 10, s.total)}%** de todos os registros da coleção. ${m.topFamilyText}
+
+Em riqueza de espécies por família, ${describeRichnessList(m.familyRichness, 3)}.
+
+### 2.2 Gêneros mais representados
+
+A distribuição por gênero indica que ${describeRankList(s.genera, s.total, 'gênero', 4)}. Os dez gêneros mais abundantes concentram **${sumTopPct(s.genera, 10, s.total)}%** dos registros.
+
+### 2.3 Espécies mais frequentes
+
+Entre as espécies, ${describeRankList(s.species, s.total, 'espécie', 4)}.
+
+A elevada abundância de determinadas espécies pode refletir maior ocorrência natural, maior esforço de coleta direcionado a grupos específicos, facilidade de identificação em campo ou viés histórico de amostragem. Espécies muito abundantes também podem indicar táxons dominantes na vegetação local ou espécies de ampla distribuição geográfica.
+
+---
+
+## 3. NÍVEL DE IDENTIFICAÇÃO TAXONÔMICA
+
+${m.cfText}
+
+Registros sem identificação até espécie representam **${formatNumber(m.withoutSpeciesIdentification)}** ${plural(m.withoutSpeciesIdentification, 'ocorrência', 'ocorrências')} (${percentage(m.withoutSpeciesIdentification, s.total)}%), que podem incluir táxons ainda não descritos, grupos de taxonomia complexa ou simplesmente material insuficiente para determinação precisa.
+
+---
+
+## 4. RARIDADE E DISTRIBUIÇÃO DE FREQUÊNCIAS
+
+A análise de raridade revelou que **${formatNumber(m.singletons)}** espécies (${percentage(m.singletons, s.species.length)}% da riqueza total) estão representadas por apenas um único registro (singletons). Outras **${formatNumber(m.doubletons)}** espécies (${percentage(m.doubletons, s.species.length)}%) possuem exatamente dois registros (doubletons). Somadas, espécies com até dois registros representam **${percentage(m.singletons + m.doubletons, s.species.length)}%** da riqueza total.
+
+Uma proporção elevada de espécies raras (singletons e doubletons) é esperada em coleções biológicas e pode indicar:
+- Alta diversidade regional, com muitos táxons naturalmente pouco abundantes;
+- Amostragem ainda insuficiente para capturar a abundância real de várias espécies;
+- Presença de espécies ocasionais, de borda de distribuição ou exóticas escapadas de cultivo.
+
+A espécie mais abundante concentra sozinha **${rankPct(s.species, 0, s.total)}%** de todos os registros, o que ${m.concentrationText}.
+
+${m.rarityAlertText}
+
+---
+
+## 5. ESFORÇO AMOSTRAL TEMPORAL
+
+### 5.1 Distribuição anual
+
+Foram encontrados registros em **${formatNumber(s.years.length)}** anos distintos. Na distribuição anual, ${describeRankList(m.yearsByCount, s.total, 'ano', 3)}. ${m.shortTemporalText}
+
+O período de coleta se estende de **${m.minYear}** a **${m.maxYear}**, totalizando uma amplitude de **${formatNumber(m.yearAmplitude)}** anos. A média de registros por ano é de **${m.meanRecordsPerYear}**, com picos observados ${m.yearPeaksText}.
+
+### 5.2 Distribuição mensal e sazonalidade
+
+Na distribuição mensal, ${describeRankList(m.monthsByCount, s.total, 'mês', 3, rankMonthName)}.
+
+Analisando a distribuição por trimestres, o período de **${m.topQuarter.label}** concentra **${percentage(m.topQuarter.count, m.monthRecordsTotal)}%** das coletas com mês informado, sugerindo ${m.seasonalityText}. Este padrão pode estar associado a épocas de floração/frutificação, condições climáticas favoráveis ao trabalho de campo ou calendário acadêmico das expedições.
+
+### 5.3 Curva de acumulação de espécies
+
+A curva de acumulação de espécies, calculada apenas com os **${formatNumber(s.completeness.completeDates)}** registros que possuem data completa (dia/mês/ano), atingiu **${formatNumber(lastValue(s.accumulation))}** espécies ao final da série temporal ordenada.
+
+${m.accumulationText}
+
+---
+
+## 6. DISTRIBUIÇÃO ESPACIAL
+
+### 6.1 Cobertura geográfica
+
+Dos **${formatNumber(s.total)}** registros, **${formatNumber(s.completeness.coordinates)}** (${percentage(s.completeness.coordinates, s.total)}%) ${plural(s.completeness.coordinates, 'possui', 'possuem')} coordenadas geográficas válidas e ${plural(s.completeness.coordinates, 'pôde', 'puderam')} ser ${plural(s.completeness.coordinates, 'plotado', 'plotados')} no mapa. Os demais **${formatNumber(s.total - s.completeness.coordinates)}** ${plural(s.total - s.completeness.coordinates, 'registro', 'registros')} (${percentage(s.total - s.completeness.coordinates, s.total)}%) ${plural(s.total - s.completeness.coordinates, 'não possui', 'não possuem')} coordenadas aproveitáveis, seja por ausência do dado ou por formato não reconhecido. ${m.coordinateAlertText}
+
+### 6.2 Municípios e localidades
+
+Para município ou área (coluna \`majorarea\`), ${describeRankList(s.municipalities, s.total, 'área', 3)}.
+
+Para localidade ou trilha (coluna \`gazetteer\`), ${describeRankList(s.localities, s.total, 'localidade', 3)}. ${m.singleLocalityText}
+
+A concentração de registros em poucas localidades sugere ${m.spatialConcentrationText}. Áreas com poucos registros não devem ser interpretadas automaticamente como tendo baixa diversidade, mas sim como lacunas de amostragem que podem ser priorizadas em futuras expedições.
+
+### 6.3 Comparação entre áreas
+
+${m.areaComparisonText}
+
+---
+
+## 7. COMPLETUDE E QUALIDADE DOS DADOS
+
+| Indicador | Sim | % | Não | % |
+|---|---:|---:|---:|---:|
+| Coordenadas válidas | ${formatNumber(s.completeness.coordinates)} | ${percentage(s.completeness.coordinates, s.total)}% | ${formatNumber(s.total - s.completeness.coordinates)} | ${percentage(s.total - s.completeness.coordinates, s.total)}% |
+| Data completa (dia/mês/ano) | ${formatNumber(s.completeness.completeDates)} | ${percentage(s.completeness.completeDates, s.total)}% | ${formatNumber(s.total - s.completeness.completeDates)} | ${percentage(s.total - s.completeness.completeDates, s.total)}% |
+| Determinador informado | ${formatNumber(s.completeness.determiners)} | ${percentage(s.completeness.determiners, s.total)}% | ${formatNumber(s.total - s.completeness.determiners)} | ${percentage(s.total - s.completeness.determiners, s.total)}% |
+
+${m.completenessText}
+
+---
+
+## 8. HÁBITOS DE CRESCIMENTO
+
+Quanto aos hábitos de crescimento, ${describeRankList(s.habits, s.total, 'hábito', 4)}.
+
+A proporção de formas de vida (árvores, arbustos, ervas, trepadeiras, etc.) reflete tanto a composição real da vegetação amostrada quanto possíveis vieses de coleta, como maior facilidade de coletar determinadas formas de vida em relação a outras.
+
+---
+
+## 9. HERBÁRIOS DE ORIGEM
+
+${m.originText}
+
+A diversidade de herbários representados, **${formatNumber(m.totalOrigins)}** siglas distintas, indica ${m.institutionalText}.
+
+---
+
+## 10. CONSIDERAÇÕES FINAIS
+
+As estatísticas apresentadas constituem um panorama descritivo inicial da coleção analisada. Elas permitem reconhecer padrões de composição taxonômica, distribuição do esforço de coleta no tempo e no espaço, qualidade e completude dos dados, e representatividade institucional.
+
+**Principais pontos de atenção identificados:**
+
+${m.attentionPoints.map(item => '- ' + item).join('\n')}
+
+**Recomendações para próximas etapas:**
+
+${m.recommendations.map(item => '- ' + item).join('\n')}
+
+---
+
+*Relatório gerado automaticamente pela ferramenta Análise Botânica em ${new Date().toLocaleDateString('pt-BR')}.*
+*Versão do relatório: 1.0*`;
+        }
+
+        function renderMap() {
+            destroyMap();
+            const mapDiv = document.getElementById('mapContainer');
+            const points = state.stats.points;
+
+            if (!points.length || typeof L === 'undefined') {
+                mapDiv.innerHTML = '<div style="padding:1rem;color:var(--muted)">Nenhuma coordenada válida encontrada.</div>';
+                return;
+            }
+
+            mapDiv.innerHTML = '';
+            state.map = L.map(mapDiv);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(state.map);
+
+            state.markers = points.slice(0, MAX_MAP_POINTS).map(point => {
+                const popup = [
+                    '<strong>' + escapeHTML(point.name) + '</strong>',
+                    point.municipality ? escapeHTML(point.municipality) : '',
+                    point.locality ? escapeHTML(point.locality) : ''
+                ].filter(Boolean).join('<br>');
+                const marker = L.marker([point.lat, point.lng]).bindPopup(popup);
+                marker.addTo(state.map);
+                return marker;
+            });
+
+            const bounds = L.latLngBounds(points.map(point => [point.lat, point.lng]));
+            state.map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
+            els.heatmapToggle.checked = false;
+            els.heatSettings.classList.add('hidden');
+            setTimeout(() => state.map.invalidateSize(), 100);
+        }
+
+        function destroyMap() {
+            if (state.map) {
+                state.map.remove();
+                state.map = null;
+            }
+            state.heatLayer = null;
+            state.markers = [];
+        }
+
+        function toggleHeatmap() {
+            if (!state.map || !state.stats.points.length) return;
+
+            if (els.heatmapToggle.checked) {
+                els.heatSettings.classList.remove('hidden');
+                state.markers.forEach(marker => state.map.removeLayer(marker));
+                if (state.heatLayer) state.map.removeLayer(state.heatLayer);
+                state.heatLayer = L.heatLayer(getHeatData(), getHeatOptions()).addTo(state.map);
+            } else {
+                els.heatSettings.classList.add('hidden');
+                if (state.heatLayer) {
+                    state.map.removeLayer(state.heatLayer);
+                    state.heatLayer = null;
+                }
+                state.markers.forEach(marker => marker.addTo(state.map));
+            }
+        }
+
+        function updateHeatOptions() {
+            els.radiusVal.textContent = els.heatRadius.value;
+            els.blurVal.textContent = els.heatBlur.value;
+            if (state.heatLayer) state.heatLayer.setOptions(getHeatOptions());
+        }
+
+        function getHeatOptions() {
+            return {
+                radius: Number(els.heatRadius.value),
+                blur: Number(els.heatBlur.value),
+                maxZoom: 13
+            };
+        }
+
+        function getHeatData() {
+            return state.stats.points.slice(0, MAX_MAP_POINTS).map(point => [point.lat, point.lng, 0.55]);
+        }
+
+        function createBarChart(canvasId, data) {
+            createChart(canvasId, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item[0]),
+                    datasets: [{ data: data.map(item => item[1]), backgroundColor: '#e67e22', borderRadius: 5 }]
+                },
+                options: baseChartOptions({ y: { beginAtZero: true } })
+            });
+        }
+
+        function createHorizontalBarChart(canvasId, data) {
+            createChart(canvasId, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item[0]),
+                    datasets: [{ data: data.map(item => item[1]), backgroundColor: '#f39c12', borderRadius: 5 }]
+                },
+                options: baseChartOptions({ x: { beginAtZero: true } }, { indexAxis: 'y' })
+            });
+        }
+
+        function createPieChart(canvasId, data) {
+            const colors = ['#1a5276', '#2980b9', '#5dade2', '#27ae60', '#8e44ad', '#e67e22', '#f39c12', '#c0392b', '#7f8c8d', '#34495e'];
+            createChart(canvasId, {
+                type: 'pie',
+                data: {
+                    labels: data.map(item => item[0]),
+                    datasets: [{ data: data.map(item => item[1]), backgroundColor: colors }]
+                },
+                options: baseChartOptions({}, { plugins: { legend: { position: 'right' } } })
+            });
+        }
+
+        function createDoughnutChart(canvasId, labels, values, colors) {
+            createChart(canvasId, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: colors }]
+                },
+                options: baseChartOptions({}, { plugins: { legend: { position: 'bottom' } } })
+            });
+        }
+
+        function createLineChart(canvasId, values) {
+            createChart(canvasId, {
+                type: 'line',
+                data: {
+                    labels: values.map((_, index) => index + 1),
+                    datasets: [{
+                        label: 'Espécies acumuladas',
+                        data: values,
+                        borderColor: '#e67e22',
+                        backgroundColor: 'rgba(230, 126, 34, 0.12)',
+                        fill: true,
+                        tension: 0.28
+                    }]
+                },
+                options: baseChartOptions({ y: { beginAtZero: true } }, { plugins: { legend: { display: false } } })
+            });
+        }
+
+        function createChart(canvasId, config) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || typeof Chart === 'undefined') return;
+            if (state.charts[canvasId]) state.charts[canvasId].destroy();
+            state.charts[canvasId] = new Chart(canvas.getContext('2d'), config);
+        }
+
+        function baseChartOptions(scales = {}, overrides = {}) {
+            return deepMerge({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { intersect: false }
+                },
+                scales
+            }, overrides);
+        }
+
+        function destroyCharts() {
+            Object.values(state.charts).forEach(chart => chart.destroy());
+            state.charts = {};
+        }
+
+        function addDownloadButton(containerId, canvasId, fileName) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.querySelector('.chart-download-btn')?.remove();
+            const button = document.createElement('button');
+            button.className = 'chart-download-btn';
+            button.type = 'button';
+            button.innerHTML = '<i class="fas fa-download" aria-hidden="true"></i> PNG';
+            button.title = 'Baixar gráfico como imagem';
+            button.addEventListener('click', () => downloadChart(canvasId, fileName));
+            container.appendChild(button);
+        }
+
+        function downloadChart(canvasId, fileName) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const link = document.createElement('a');
+            link.download = (fileName || 'grafico') + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadMap() {
+            const mapElement = document.getElementById('mapContainer');
+            if (!mapElement || typeof html2canvas === 'undefined') return;
+            html2canvas(mapElement, { useCORS: true, scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'mapa_botanico.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function exportWorkbook() {
+            const s = state.stats;
+            if (!s || typeof XLSX === 'undefined') return;
+
+            const workbook = XLSX.utils.book_new();
+            addSheet(workbook, 'Resumo', [
+                ['Métrica', 'Valor'],
+                ['Total de registros', s.total],
+                ['Famílias', s.families.length],
+                ['Gêneros', s.genera.length],
+                ['Espécies', s.species.length],
+                ['Registros com coordenadas', s.completeness.coordinates],
+                ['Registros com data completa', s.completeness.completeDates],
+                ['Registros com determinador', s.completeness.determiners]
+            ]);
+            addSheet(workbook, 'Famílias', [['Família', 'Registros', '%'], ...withPercent(s.families, s.total)]);
+            addSheet(workbook, 'Gêneros', [['Gênero', 'Registros', '%'], ...withPercent(s.genera, s.total)]);
+            addSheet(workbook, 'Espécies', [['Espécie', 'Registros', '%'], ...withPercent(s.species, s.total)]);
+            addSheet(workbook, 'Hábito', [['Hábito', 'Registros', '%'], ...withPercent(s.habits, s.total)]);
+            addSheet(workbook, 'Origem', [['Sigla', 'Registros', '%', 'Espécies distintas'], ...s.origins.map(([name, count, species]) => [name, count, percentage(count, s.total) + '%', species])]);
+            addSheet(workbook, 'Raridade', [['Registros por espécie', 'Número de espécies'], ...s.rarity]);
+            addSheet(workbook, 'Coletas por Ano', [['Ano', 'Coletas'], ...s.years]);
+            addSheet(workbook, 'Coletas por Mês', [['Mês', 'Coletas'], ...s.months.map(([month, count]) => [MONTHS[Number(month) - 1], count])]);
+            addSheet(workbook, 'Municípios', [['Município', 'Registros', '%'], ...withPercent(s.municipalities, s.total)]);
+            addSheet(workbook, 'Localidades', [['Localidade', 'Registros', '%'], ...withPercent(s.localities, s.total)]);
+            addSheet(workbook, 'Completude', [
+                ['Indicador', 'Registros', '%', 'Faltante'],
+                ['Coordenadas válidas', s.completeness.coordinates, percentage(s.completeness.coordinates, s.total) + '%', s.total - s.completeness.coordinates],
+                ['Data completa', s.completeness.completeDates, percentage(s.completeness.completeDates, s.total) + '%', s.total - s.completeness.completeDates],
+                ['Determinador', s.completeness.determiners, percentage(s.completeness.determiners, s.total) + '%', s.total - s.completeness.determiners]
+            ]);
+            addSheet(workbook, 'Áreas', [['Área', 'Registros', 'Espécies'], ...s.areas]);
+            addSheet(workbook, 'Espécies por Família', [
+                ['Família', 'Espécie', 'Nome popular', 'Hábito', 'N', 'nº Testemunho'],
+                ...s.familySpecies.flatMap(family => family.species.map(item => [
+                    family.family,
+                    formatSpeciesText(item),
+                    item.popularName,
+                    item.habit,
+                    item.count,
+                    item.vouchers
+                ]))
+            ]);
+
+            XLSX.writeFile(workbook, 'estatisticas_botanicas_completo.xlsx');
+        }
+
+        function exportFamilySpeciesList(format) {
+            if (!state.stats) return;
+            const rows = getFamilySpeciesExportRows();
+            const fileBase = 'lista_especies_por_familia';
+
+            if (format === 'xlsx') {
+                exportFamilySpeciesXLSX(rows, fileBase);
+            } else if (format === 'csv') {
+                exportFamilySpeciesCSV(rows, fileBase);
+            } else if (format === 'doc') {
+                exportFamilySpeciesDocument(rows, fileBase, 'doc');
+            } else if (format === 'html') {
+                exportFamilySpeciesDocument(rows, fileBase, 'html');
+            }
+        }
+
+        function exportReport(format) {
+            if (!state.stats) return;
+            const fileBase = 'relatorio_analise_botanica';
+            const text = buildReportText();
+
+            if (format === 'txt') {
+                downloadBlob('\uFEFF' + text, fileBase + '.txt', 'text/plain;charset=utf-8');
+                return;
+            }
+
+            const html = reportDocumentHTML();
+            const mime = format === 'doc' ? 'application/msword;charset=utf-8' : 'text/html;charset=utf-8';
+            downloadBlob('\uFEFF' + html, fileBase + '.' + format, mime);
+        }
+
+        function reportDocumentHTML() {
+            return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Análise Botânica</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 11pt; line-height: 1.55; }
+        h1 { font-size: 16pt; margin-bottom: 14pt; }
+        h2 { font-size: 12.5pt; margin: 14pt 0 5pt; }
+        h3 { font-size: 11.5pt; margin: 10pt 0 4pt; }
+        p { margin: 0 0 8pt; }
+        table { border-collapse: collapse; width: 100%; margin: 8pt 0; }
+        th, td { border: 1px solid #999; padding: 4px 6px; text-align: left; vertical-align: top; }
+        th { background: #f1f1f1; }
+    </style>
+</head>
+<body>
+    ${buildReportHTML()}
+</body>
+</html>`;
+        }
+
+        function getFamilySpeciesExportRows() {
+            return [
+                ['Família', 'Espécie', 'Nome popular', 'Hábito', 'N', 'nº Testemunho'],
+                ...state.stats.familySpecies.flatMap(family => family.species.map(item => [
+                    family.family,
+                    formatSpeciesText(item),
+                    item.popularName,
+                    item.habit,
+                    item.count,
+                    item.vouchers
+                ]))
+            ];
+        }
+
+        function exportFamilySpeciesXLSX(rows, fileBase) {
+            if (typeof XLSX === 'undefined') return;
+            const workbook = XLSX.utils.book_new();
+            const sheet = XLSX.utils.aoa_to_sheet(rows);
+            sheet['!cols'] = [
+                { wch: 18 },
+                { wch: 42 },
+                { wch: 26 },
+                { wch: 16 },
+                { wch: 8 },
+                { wch: 28 }
+            ];
+            XLSX.utils.book_append_sheet(workbook, sheet, 'Espécies por Família');
+            XLSX.writeFile(workbook, fileBase + '.xlsx');
+        }
+
+        function exportFamilySpeciesCSV(rows, fileBase) {
+            const csv = rows.map(row => row.map(csvCell).join(',')).join('\r\n');
+            downloadBlob('\uFEFF' + csv, fileBase + '.csv', 'text/csv;charset=utf-8');
+        }
+
+        function exportFamilySpeciesDocument(rows, fileBase, extension) {
+            const title = 'Lista de Espécies por Família';
+            const tableRows = rows.map((row, rowIndex) => {
+                const tag = rowIndex === 0 ? 'th' : 'td';
+                return '<tr>' + row.map((cell, cellIndex) => {
+                    const value = rowIndex > 0 && cellIndex === 1 ? italicizeSpeciesForDocument(cell) : escapeHTML(cell);
+                    const align = cellIndex === 4 ? ' style="text-align:right;"' : '';
+                    return `<${tag}${align}>${value}</${tag}>`;
+                }).join('') + '</tr>';
+            }).join('');
+
+            const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>${escapeHTML(title)}</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: #111; }
+        h1 { font-size: 14pt; margin-bottom: 12pt; }
+        table { border-collapse: collapse; width: 100%; }
+        th { border-top: 1px solid #111; border-bottom: 1px solid #111; font-weight: bold; text-align: left; }
+        td, th { padding: 3px 5px; vertical-align: top; }
+        tfoot td { border-top: 1px solid #111; }
+    </style>
+</head>
+<body>
+    <h1>${escapeHTML(title)}</h1>
+    <table>
+        <tbody>${tableRows}</tbody>
+        <tfoot><tr><td colspan="6"></td></tr></tfoot>
+    </table>
+</body>
+</html>`;
+
+            const mime = extension === 'doc' ? 'application/msword;charset=utf-8' : 'text/html;charset=utf-8';
+            downloadBlob('\uFEFF' + html, fileBase + '.' + extension, mime);
+        }
+
+        function addSheet(workbook, name, rows) {
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rows), name);
+        }
+
+        function downloadBlob(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function csvCell(value) {
+            return '"' + String(value ?? '').replace(/"/g, '""') + '"';
+        }
+
+        function buildReportMetrics(s) {
+            const speciesCounts = s.species.map(item => item[1]);
+            const meanRecordsPerSpecies = speciesCounts.length ? average(speciesCounts) : 0;
+            const medianRecordsPerSpecies = median(speciesCounts);
+            const yearsByCount = toSortedArray(Object.fromEntries(s.years));
+            const monthsByCount = toSortedArray(Object.fromEntries(s.months));
+            const yearValues = s.years.map(item => Number(item[0])).filter(Number.isFinite);
+            const minYear = yearValues.length ? Math.min(...yearValues) : 'não informado';
+            const maxYear = yearValues.length ? Math.max(...yearValues) : 'não informado';
+            const yearAmplitude = yearValues.length ? (Math.max(...yearValues) - Math.min(...yearValues) + 1) : 0;
+            const meanRecordsPerYear = s.years.length ? average(s.years.map(item => item[1])) : 0;
+            const singletons = rarityCount(s, 1);
+            const doubletons = rarityCount(s, 2);
+            const familyRichness = s.familySpecies
+                .map(family => [family.family, family.richness])
+                .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+            const quarters = buildQuarterStats(s.months);
+            const topQuarter = quarters[0] || { label: 'não informado', count: 0 };
+            const monthRecordsTotal = quarters.reduce((sum, item) => sum + item.count, 0);
+            const richestArea = areaWithMostSpecies(s.areas);
+            const bestAreaRatio = areaWithBestRatio(s.areas);
+            const totalOrigins = s.origins.filter(item => item[0] !== '(não informado)').length;
+            const singletonDoubletonPct = Number(percentage(singletons + doubletons, s.species.length));
+
+            return {
+                meanRecordsPerSpecies: formatDecimal(meanRecordsPerSpecies),
+                medianRecordsPerSpecies: formatDecimal(medianRecordsPerSpecies),
+                meanMedianInterpretation: interpretMeanMedian(meanRecordsPerSpecies, medianRecordsPerSpecies),
+                familyRichness,
+                withoutSpeciesIdentification: s.total - s.identification.species,
+                singletons,
+                doubletons,
+                concentrationText: interpretSpeciesConcentration(rankValue(s.species, 0), s.total),
+                yearsByCount,
+                monthsByCount,
+                minYear,
+                maxYear,
+                yearAmplitude,
+                meanRecordsPerYear: formatDecimal(meanRecordsPerYear),
+                yearPeaksText: describeYearPeaks(yearsByCount),
+                topQuarter,
+                monthRecordsTotal,
+                seasonalityText: interpretSeasonality(topQuarter, monthRecordsTotal),
+                accumulationText: interpretAccumulation(s.accumulation),
+                spatialConcentrationText: interpretSpatialConcentration(s.municipalities, s.total),
+                richestArea,
+                bestAreaRatio,
+                topFamilyText: interpretTopFamily(s.families, s.total),
+                cfText: buildCfText(s),
+                rarityAlertText: interpretRarity(singletons, doubletons, s.species.length),
+                shortTemporalText: interpretTemporalSpan(s.years.length),
+                coordinateAlertText: interpretCoordinateCoverage(s),
+                singleLocalityText: interpretSingleRank(s.localities, 'localidade'),
+                areaComparisonText: buildAreaComparisonText(s.areas),
+                completenessText: interpretCompleteness(s),
+                totalOrigins,
+                institutionalText: interpretInstitutionalDiversity(totalOrigins),
+                originText: buildOriginText(s),
+                attentionPoints: buildAttentionPoints(s, singletons, doubletons),
+                recommendations: buildRecommendations(s, singletons, doubletons)
+            };
+        }
+
+        function markdownReportToHTML(markdown) {
+            const lines = markdown.split('\n');
+            let html = '';
+            let paragraph = [];
+            let list = [];
+            let table = [];
+
+            const flushParagraph = () => {
+                if (!paragraph.length) return;
+                html += `<p>${formatInlineMarkdown(paragraph.join(' '))}</p>`;
+                paragraph = [];
+            };
+            const flushList = () => {
+                if (!list.length) return;
+                html += '<ul>' + list.map(item => `<li>${formatInlineMarkdown(item)}</li>`).join('') + '</ul>';
+                list = [];
+            };
+            const flushTable = () => {
+                if (!table.length) return;
+                const rows = table.filter(row => !/^\|\s*-/.test(row));
+                html += '<table>' + rows.map((row, index) => {
+                    const cells = row.split('|').slice(1, -1).map(cell => cell.trim());
+                    const tag = index === 0 ? 'th' : 'td';
+                    return '<tr>' + cells.map(cell => `<${tag}>${formatInlineMarkdown(cell.replace(/:$/, ''))}</${tag}>`).join('') + '</tr>';
+                }).join('') + '</table>';
+                table = [];
+            };
+            const flushAll = () => {
+                flushParagraph();
+                flushList();
+                flushTable();
+            };
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    flushAll();
+                    return;
+                }
+                if (trimmed.startsWith('|')) {
+                    flushParagraph();
+                    flushList();
+                    table.push(trimmed);
+                    return;
+                }
+                if (/^-{3,}$/.test(trimmed)) {
+                    flushAll();
+                    html += '<hr>';
+                    return;
+                }
+                if (trimmed.startsWith('- ')) {
+                    flushParagraph();
+                    flushTable();
+                    list.push(trimmed.slice(2));
+                    return;
+                }
+                const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+                if (heading) {
+                    flushAll();
+                    const level = heading[1].length;
+                    html += `<h${level}>${formatInlineMarkdown(heading[2])}</h${level}>`;
+                    return;
+                }
+                paragraph.push(trimmed);
+            });
+
+            flushAll();
+            return html;
+        }
+
+        function formatInlineMarkdown(value) {
+            return escapeHTML(value)
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/`(.+?)`/g, '<code>$1</code>');
+        }
+
+        function italicizeSpeciesForDocument(value) {
+            const text = String(value ?? '').trim();
+            if (!text) return '';
+            const parts = text.split(/\s+/);
+            if (parts.length < 2) return escapeHTML(text);
+            const binomial = parts.slice(0, 2).join(' ');
+            const author = parts.slice(2).join(' ');
+            return '<em>' + escapeHTML(binomial) + '</em>' + (author ? ' ' + escapeHTML(author) : '');
+        }
+
+        function withPercent(items, total) {
+            return items.map(([name, count]) => [name, count, percentage(count, total) + '%']);
+        }
+
+        function tableFromRows(headers, rows, numericColumns = [], rowsAreHtml = false) {
+            return `
+                <table class="stats-table">
+                    <thead><tr>${headers.map((header, index) => `<th class="${numericColumns[index] ? 'num' : ''}">${escapeHTML(header)}</th>`).join('')}</tr></thead>
+                    <tbody>
+                        ${rows.map(row => `
+                            <tr>${row.map((cell, index) => {
+                                const value = rowsAreHtml && index === 0 ? cell : escapeHTML(cell);
+                                return `<td class="${numericColumns[index] ? 'num' : ''}">${value}</td>`;
+                            }).join('')}</tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function createTable(containerId, data, total, firstColumn) {
+            document.getElementById(containerId).innerHTML = tableFromRows(
+                [firstColumn, 'Contagem', '%'],
+                data.map(([name, count]) => [name, count, percentage(count, total) + '%']),
+                [false, true, true]
+            );
+        }
+
+        function createOriginTable(containerId, data, total) {
+            document.getElementById(containerId).innerHTML = tableFromRows(
+                ['Sigla', 'Registros', '%', 'Espécies dist.'],
+                data.map(([name, count, species]) => [name, count, percentage(count, total) + '%', species]),
+                [false, true, true, true]
+            );
+        }
+
+        function createRarityTable(containerId, data) {
+            document.getElementById(containerId).innerHTML = tableFromRows(
+                ['Nº registros', 'Espécies'],
+                data,
+                [false, true]
+            );
+        }
+
+        function chartSection(title, chartId, tableId, fileName) {
+            return `
+                <h3 class="section-title">
+                    <span>${escapeHTML(title)}</span>
+                    <button class="chart-download-btn" type="button" data-download-chart data-canvas="${chartId}" data-file="${fileName}">
+                        <i class="fas fa-download" aria-hidden="true"></i> PNG
+                    </button>
+                </h3>
+                <div class="chart-container"><canvas id="${chartId}"></canvas></div>
+                <div id="${tableId}"></div>
+            `;
+        }
+
+        function summaryCard(value, label) {
+            return `
+                <div class="summary-card">
+                    <div class="summary-value">${Number(value).toLocaleString('pt-BR')}</div>
+                    <div class="summary-label">${escapeHTML(label)}</div>
+                </div>
+            `;
+        }
+
+        function completenessRow(label, value, total) {
+            const missing = total - value;
+            return `
+                <tr>
+                    <td>${escapeHTML(label)}</td>
+                    <td class="num">${value}</td>
+                    <td class="pct">${percentage(value, total)}%</td>
+                    <td class="num">${missing} (${percentage(missing, total)}%)</td>
+                </tr>
+            `;
+        }
+
+        function toggleChartTable(button) {
+            const chartContainer = document.getElementById(button.dataset.chart);
+            const table = document.getElementById(button.dataset.table);
+            if (!chartContainer || !table) return;
+            const showTable = table.classList.contains('hidden');
+            chartContainer.classList.toggle('hidden', showTable);
+            table.classList.toggle('hidden', !showTable);
+            button.textContent = showTable ? 'Ver gráfico' : 'Ver tabela';
+        }
+
+        function getSpeciesName(row) {
+            const genus = clean(row.genus);
+            const species = clean(row.sp1);
+            return genus && species ? genus + ' ' + species : '';
+        }
+
+        function addIfFilled(set, value) {
+            const cleaned = clean(value);
+            if (cleaned) set.add(cleaned);
+        }
+
+        function joinSet(set) {
+            return Array.from(set).join('; ');
+        }
+
+        function formatSpeciesText(item) {
+            return item.author ? item.species + ' ' + item.author : item.species;
+        }
+
+        function formatSpeciesHTML(item) {
+            const species = `<em>${escapeHTML(item.species)}</em>`;
+            return item.author ? species + ' ' + escapeHTML(item.author) : species;
+        }
+
+        function hasCompleteDate(row) {
+            return validYear(row.collyy) && validMonth(row.collmm) && validDay(row.colldd);
+        }
+
+        function getRowDate(row) {
+            return new Date(Number(row.collyy), Number(row.collmm) - 1, Number(row.colldd));
+        }
+
+        function validYear(value) {
+            const year = Number(value);
+            return Number.isInteger(year) && year > 1500 && year <= new Date().getFullYear() ? String(year) : '';
+        }
+
+        function validMonth(value) {
+            const month = Number(value);
+            return Number.isInteger(month) && month >= 1 && month <= 12 ? String(month) : '';
+        }
+
+        function validDay(value) {
+            const day = Number(value);
+            return Number.isInteger(day) && day >= 1 && day <= 31 ? String(day) : '';
+        }
+
+        function getCoordinate(row, decimalField, degreeField, minuteField, secondField, directionField) {
+            const decimal = parseCoordinate(row[decimalField]);
+            if (decimal !== null) return decimal;
+
+            const degree = clean(row[degreeField]);
+            const minute = clean(row[minuteField]);
+            const second = clean(row[secondField]) || '0';
+            const direction = clean(row[directionField]);
+            if (!degree || !minute) return null;
+
+            return parseCoordinate(`${degree}°${minute}'${second}"${direction}`);
+        }
+
+        function parseCoordinate(value) {
+            if (value === '' || value === null || value === undefined) return null;
+            const text = String(value).trim();
+            if (!text) return null;
+
+            const decimal = Number(text.replace(',', '.'));
+            if (Number.isFinite(decimal) && !/[°º'"]/u.test(text)) return decimal;
+
+            const normalized = text
+                .replace(/º/g, '°')
+                .replace(/[′’]/g, "'")
+                .replace(/[″“”]/g, '"')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const dmsWithSymbols = normalized.match(/^(-?\d{1,3}(?:\.\d+)?)\s*°\s*(\d{1,2}(?:\.\d+)?)?\s*'?\s*(\d{1,2}(?:\.\d+)?)?\s*"?\s*([NSEW])?$/i);
+            if (dmsWithSymbols) return dmsToDecimal(dmsWithSymbols);
+
+            const dmsWithSpaces = normalized.match(/^(-?\d{1,3}(?:\.\d+)?)\s+(\d{1,2}(?:\.\d+)?)\s+(\d{1,2}(?:\.\d+)?)\s*([NSEW])?$/i);
+            if (dmsWithSpaces) return dmsToDecimal(dmsWithSpaces);
+
+            return null;
+        }
+
+        function dmsToDecimal(match) {
+            const degrees = Number(match[1]);
+            const minutes = Number(match[2] || 0);
+            const seconds = Number(match[3] || 0);
+            const direction = (match[4] || '').toUpperCase();
+            if (!Number.isFinite(degrees) || !Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+            let decimal = Math.abs(degrees) + minutes / 60 + seconds / 3600;
+            if (degrees < 0 || direction === 'S' || direction === 'W') decimal *= -1;
+            return decimal;
+        }
+
+        function isValidLatLng(lat, lng) {
+            return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+        }
+
+        function setStatus(type, message) {
+            els.statusPlanilha.classList.remove('success', 'error');
+            if (type) els.statusPlanilha.classList.add(type);
+            els.statusText.textContent = message;
+        }
+
+        function showError(message) {
+            els.errorText.textContent = message;
+            els.errorMsg.style.display = 'flex';
+        }
+
+        function hideError() {
+            els.errorMsg.style.display = 'none';
+            els.errorText.textContent = '';
+        }
+
+        function percentage(value, total) {
+            return total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+        }
+
+        function formatDecimal(value) {
+            return Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        }
+
+        function average(values) {
+            return values.length ? values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length : 0;
+        }
+
+        function median(values) {
+            if (!values.length) return 0;
+            const sorted = values.slice().sort((a, b) => a - b);
+            const middle = Math.floor(sorted.length / 2);
+            return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+        }
+
+        function rankItem(array, index) {
+            return Array.isArray(array) && array[index] ? array[index] : null;
+        }
+
+        function rankName(array, index) {
+            const item = rankItem(array, index);
+            return item ? item[0] : 'não informado';
+        }
+
+        function rankValue(array, index) {
+            const item = rankItem(array, index);
+            return item ? Number(item[1]) || 0 : 0;
+        }
+
+        function rankCount(array, index) {
+            return formatNumber(rankValue(array, index));
+        }
+
+        function rankPct(array, index, total) {
+            return percentage(rankValue(array, index), total);
+        }
+
+        function rankMonthName(array, index) {
+            const item = rankItem(array, index);
+            return item ? (MONTHS[Number(item[0]) - 1] || item[0]) : 'não informado';
+        }
+
+        function originSpecies(array, index) {
+            const item = rankItem(array, index);
+            return item ? formatNumber(item[2]) : '0';
+        }
+
+        function plural(value, singular, pluralForm) {
+            return Number(value) === 1 ? singular : pluralForm;
+        }
+
+        function describeRankList(array, total, label, limit, nameGetter = rankName) {
+            const items = array.slice(0, limit).filter(item => Number(item[1]) > 0);
+            if (!items.length) return `não há ${label}s com registros informados`;
+            if (items.length === 1) {
+                return `todos os registros com essa informação estão concentrados em **${nameGetter(items, 0)}**, com **${formatNumber(items[0][1])}** ${plural(items[0][1], 'registro', 'registros')} (${percentage(items[0][1], total)}% do total)`;
+            }
+            const formatted = items.map((item, index) => {
+                const name = nameGetter(items, index);
+                return `**${name}** (${formatNumber(item[1])} ${plural(item[1], 'registro', 'registros')}; ${percentage(item[1], total)}%)`;
+            });
+            return `os principais ${label}s foram ${joinHumanList(formatted)}`;
+        }
+
+        function describeRichnessList(array, limit) {
+            const items = array.slice(0, limit).filter(item => Number(item[1]) > 0);
+            if (!items.length) return 'não há riqueza por família calculável';
+            if (items.length === 1) {
+                return `a família mais rica foi **${items[0][0]}**, com **${formatNumber(items[0][1])}** ${plural(items[0][1], 'espécie distinta', 'espécies distintas')}`;
+            }
+            return 'as famílias mais ricas foram ' + joinHumanList(items.map(item => `**${item[0]}** (${formatNumber(item[1])} spp.)`));
+        }
+
+        function joinHumanList(items) {
+            if (items.length <= 1) return items[0] || '';
+            if (items.length === 2) return items[0] + ' e ' + items[1];
+            return items.slice(0, -1).join(', ') + ' e ' + items[items.length - 1];
+        }
+
+        function sumTopPct(array, limit, total) {
+            const sum = array.slice(0, limit).reduce((acc, item) => acc + Number(item[1] || 0), 0);
+            return percentage(sum, total);
+        }
+
+        function rarityCount(stats, frequency) {
+            const item = stats.rarity.find(entry => Number(entry[0]) === frequency);
+            return item ? item[1] : 0;
+        }
+
+        function buildQuarterStats(months) {
+            const quarters = [
+                { label: 'janeiro a março', count: 0 },
+                { label: 'abril a junho', count: 0 },
+                { label: 'julho a setembro', count: 0 },
+                { label: 'outubro a dezembro', count: 0 }
+            ];
+            months.forEach(([month, count]) => {
+                const index = Math.floor((Number(month) - 1) / 3);
+                if (quarters[index]) quarters[index].count += Number(count) || 0;
+            });
+            return quarters.sort((a, b) => b.count - a.count);
+        }
+
+        function areaWithMostSpecies(areas) {
+            const item = areas.slice().sort((a, b) => b[2] - a[2] || b[1] - a[1])[0];
+            return item ? { name: item[0], records: item[1], species: item[2] } : { name: 'não informada', records: 0, species: 0 };
+        }
+
+        function areaWithBestRatio(areas) {
+            const item = areas
+                .filter(area => Number(area[1]) > 0)
+                .map(area => ({ name: area[0], records: area[1], species: area[2], ratio: area[2] / area[1] }))
+                .sort((a, b) => b.ratio - a.ratio || b.species - a.species)[0];
+            return item ? { ...item, ratio: formatDecimal(item.ratio) } : { name: 'não informada', ratio: '0,0' };
+        }
+
+        function interpretMeanMedian(mean, medianValue) {
+            if (!medianValue) return 'A mediana igual a zero ou ausente indica que não há espécies suficientes para avaliar a distribuição de abundância.';
+            if (Math.abs(mean - medianValue) <= 0.2) return 'A proximidade entre média e mediana indica distribuição relativamente uniforme dos registros entre as espécies, sem dominância numérica expressiva.';
+            if (mean >= medianValue * 2) return 'Neste conjunto, a média é bem maior que a mediana, sugerindo concentração dos registros em um subconjunto de espécies mais frequentes.';
+            if (mean > medianValue) return 'Neste conjunto, a média é ligeiramente maior que a mediana, indicando alguma concentração em espécies mais comuns, mas sem forte dominância.';
+            return 'Neste conjunto, média e mediana são próximas, sugerindo distribuição relativamente equilibrada dos registros entre as espécies.';
+        }
+
+        function interpretTopFamily(families, total) {
+            const pct = Number(rankPct(families, 0, total));
+            if (pct > 30) return 'Uma única família concentra mais de 30% dos registros, indicando possível dominância florística, recorte temático da amostragem ou viés de coleta.';
+            return '';
+        }
+
+        function buildCfText(s) {
+            if (!s.identification.cf) return 'Nenhum registro possui a marcação "cf." (conferir), indicando que não há registros com incerteza taxonômica explicitamente sinalizada nessa coluna.';
+            return `Foram encontrados **${formatNumber(s.identification.cf)}** ${plural(s.identification.cf, 'registro', 'registros')} (${percentage(s.identification.cf, s.total)}% do total) marcados com conferência taxonômica, como valor "cf." na coluna correspondente. Esses registros indicam incerteza na determinação e merecem atenção para futura revisão por especialistas.`;
+        }
+
+        function interpretRarity(singletons, doubletons, speciesTotal) {
+            const pct = Number(percentage(singletons + doubletons, speciesTotal));
+            const singletonPct = Number(percentage(singletons, speciesTotal));
+            if (singletonPct > 80) return `A proporção muito elevada de singletons (${percentage(singletons, speciesTotal)}%) sugere que a amostragem ainda está longe da saturação e que novas coletas podem acrescentar espécies ainda não registradas.`;
+            if (pct > 60) return `A alta proporção de espécies com até dois registros (${percentage(singletons + doubletons, speciesTotal)}%) sugere uma comunidade ou coleção com muitos táxons pouco representados.`;
+            return '';
+        }
+
+        function interpretTemporalSpan(yearCount) {
+            if (yearCount > 0 && yearCount <= 3) return `O período amostral é curto (${formatNumber(yearCount)} ${plural(yearCount, 'ano', 'anos')}), o que limita inferências sobre tendências temporais de longo prazo.`;
+            return '';
+        }
+
+        function interpretCoordinateCoverage(s) {
+            const pct = Number(percentage(s.completeness.coordinates, s.total));
+            if (pct < 20) return `A baixa cobertura de coordenadas compromete análises espaciais; recomenda-se georreferenciamento prioritário.`;
+            if (pct > 80) return `A alta cobertura de coordenadas permite análises espaciais mais robustas.`;
+            return '';
+        }
+
+        function interpretSingleRank(array, label) {
+            const valid = array.filter(item => Number(item[1]) > 0);
+            if (valid.length === 1 && Number(percentage(valid[0][1], valid[0][1])) === 100) {
+                return `Todos os registros com ${label} informada estão concentrados em uma única ${label}, o que deve ser considerado na interpretação espacial.`;
+            }
+            return '';
+        }
+
+        function buildAreaComparisonText(areas) {
+            if (!areas.length) return 'Não há áreas informadas para comparação.';
+            if (areas.length === 1) {
+                return `Todos os registros pertencem a uma única área: **${areas[0][0]}**, com **${formatNumber(areas[0][1])}** ${plural(areas[0][1], 'registro', 'registros')} e **${formatNumber(areas[0][2])}** ${plural(areas[0][2], 'espécie distinta', 'espécies distintas')}. Nesse caso, não é possível comparar riqueza ou eficiência amostral entre áreas.`;
+            }
+            const richest = areaWithMostSpecies(areas);
+            const ratio = areaWithBestRatio(areas);
+            return `A área com maior riqueza de espécies foi **${richest.name}**, com **${formatNumber(richest.species)}** espécies distintas em **${formatNumber(richest.records)}** registros. A razão espécies/registros, que pode indicar eficiência amostral, foi mais alta em **${ratio.name}** (${ratio.ratio} spp./registro).`;
+        }
+
+        function interpretSpeciesConcentration(topCount, total) {
+            const pct = Number(percentage(topCount, total));
+            if (pct >= 20) return 'indica forte concentração da coleção em uma única espécie dominante ou muito coletada';
+            if (pct >= 10) return 'sugere concentração moderada dos registros em uma espécie particularmente frequente';
+            return 'sugere baixa dominância de uma única espécie no conjunto analisado';
+        }
+
+        function describeYearPeaks(yearsByCount) {
+            const peaks = yearsByCount.slice(0, 3).filter(item => Number(item[1]) > 0).map(item => item[0]);
+            return peaks.length ? 'nos anos de ' + peaks.join(', ') : 'de forma não avaliável por ausência de anos informados';
+        }
+
+        function interpretSeasonality(topQuarter, total) {
+            const pct = Number(percentage(topQuarter.count, total));
+            if (!total) return 'ausência de informação mensal suficiente para avaliar sazonalidade';
+            if (pct >= 50) return 'forte concentração sazonal do esforço de coleta';
+            if (pct >= 35) return 'concentração moderada do esforço de coleta nesse intervalo';
+            return 'distribuição relativamente equilibrada das coletas ao longo do ano';
+        }
+
+        function interpretAccumulation(curve) {
+            if (!curve.length) return 'Não foi possível avaliar a curva de acumulação porque não há registros com data completa.';
+            const last = lastValue(curve);
+            const previousIndex = Math.max(0, Math.floor(curve.length * 0.8) - 1);
+            const gain = last - curve[previousIndex];
+            const pctGain = Number(percentage(gain, last));
+            if (pctGain >= 20) return 'A curva ainda apresenta incremento expressivo no trecho final, sugerindo que a amostragem pode não ter atingido estabilidade e que novas coletas tendem a acrescentar espécies.';
+            if (pctGain >= 5) return 'A curva apresenta incremento moderado no trecho final, indicando alguma aproximação de estabilização, mas ainda com potencial de acréscimo de espécies.';
+            return 'A curva apresenta baixo incremento no trecho final, sugerindo tendência de estabilização da riqueza observada para os dados datados disponíveis.';
+        }
+
+        function interpretSpatialConcentration(items, total) {
+            const topPct = Number(rankPct(items, 0, total));
+            if (topPct >= 50) return 'forte concentração espacial do esforço de coleta em uma única área principal';
+            if (topPct >= 30) return 'concentração moderada dos registros em algumas áreas mais amostradas';
+            return 'distribuição espacial relativamente menos concentrada entre as áreas informadas';
+        }
+
+        function interpretCompleteness(s) {
+            const coordPct = Number(percentage(s.completeness.coordinates, s.total));
+            const datePct = Number(percentage(s.completeness.completeDates, s.total));
+            const detPct = Number(percentage(s.completeness.determiners, s.total));
+            const issues = [];
+            const positives = [];
+            if (coordPct < 20) issues.push('a proporção muito baixa de coordenadas válidas limita severamente análises espaciais');
+            else if (coordPct < 70) issues.push('a proporção de coordenadas válidas limita análises espaciais mais robustas');
+            else if (coordPct > 80) positives.push('a alta cobertura de coordenadas favorece análises espaciais');
+            if (datePct < 70) issues.push('a ausência de datas completas reduz a precisão de análises temporais e sazonais');
+            else if (datePct === 100) positives.push('todos os registros possuem data completa');
+            if (detPct < 70) issues.push('a falta de determinador em parte dos registros reduz a rastreabilidade taxonômica');
+            else if (detPct === 100) positives.push('todos os registros possuem determinador informado, conferindo alta rastreabilidade taxonômica à coleção');
+            if (!issues.length) return 'A completude geral dos dados é satisfatória para análises exploratórias, embora revisões pontuais ainda possam melhorar a base.';
+            return 'A completude evidencia pontos de atenção: ' + issues.join('; ') + '.' + (positives.length ? ' Como ponto positivo, ' + positives.join('; ') + '.' : '');
+        }
+
+        function interpretInstitutionalDiversity(totalOrigins) {
+            if (totalOrigins >= 5) return 'boa diversidade institucional e potencial integração de diferentes fontes de dados';
+            if (totalOrigins >= 2) return 'participação de mais de uma instituição, com alguma diversidade de origem dos registros';
+            if (totalOrigins === 1) return 'predominância de uma única instituição de origem, o que pode refletir foco curatorial específico';
+            return 'que a coluna sigla_colbot_origem não foi preenchida na planilha de origem, impossibilitando a análise de proveniência institucional';
+        }
+
+        function buildOriginText(s) {
+            const valid = s.origins.filter(item => item[0] !== '(não informado)' && Number(item[1]) > 0);
+            if (!valid.length) return 'A coluna sigla_colbot_origem não foi preenchida na planilha de origem. Por isso, não foi possível avaliar quais herbários ou coleções institucionais concentram os registros.';
+            if (valid.length === 1) {
+                return `Apenas uma sigla de herbário foi informada: **${valid[0][0]}**, com **${formatNumber(valid[0][1])}** ${plural(valid[0][1], 'registro', 'registros')} (${percentage(valid[0][1], s.total)}%) e **${formatNumber(valid[0][2])}** espécies distintas.`;
+            }
+            return `Os herbários de origem mais representados foram ${describeOriginList(valid, s.total, 3)}.`;
+        }
+
+        function describeOriginList(array, total, limit) {
+            const items = array.slice(0, limit);
+            return joinHumanList(items.map(item => `**${item[0]}** (${formatNumber(item[1])} ${plural(item[1], 'registro', 'registros')}; ${percentage(item[1], total)}%; ${formatNumber(item[2])} spp.)`));
+        }
+
+        function buildAttentionPoints(s, singletons, doubletons) {
+            const points = [];
+            if (s.identification.cf) points.push(`Revisar ${formatNumber(s.identification.cf)} ${plural(s.identification.cf, 'registro marcado', 'registros marcados')} com cf. ou conferência taxonômica.`);
+            const withoutSpecies = s.total - s.identification.species;
+            if (withoutSpecies) points.push(`Priorizar a determinação de ${formatNumber(withoutSpecies)} ${plural(withoutSpecies, 'registro ainda não identificado', 'registros ainda não identificados')} até espécie.`);
+            if (Number(percentage(singletons + doubletons, s.species.length)) >= 40) points.push(`Avaliar espécies raras: ${percentage(singletons + doubletons, s.species.length)}% da riqueza possui até dois registros.`);
+            if (Number(percentage(s.completeness.coordinates, s.total)) < 20) points.push('Georreferenciamento é prioridade alta, pois menos de 20% dos registros possuem coordenadas válidas.');
+            else if (Number(percentage(s.completeness.coordinates, s.total)) < 70) points.push('Melhorar ou revisar coordenadas geográficas ausentes, inválidas ou em formato não reconhecido.');
+            if (Number(percentage(s.completeness.completeDates, s.total)) < 70) points.push('Completar datas de coleta quando possível, especialmente dia e mês.');
+            if (!s.origins.filter(item => item[0] !== '(não informado)' && Number(item[1]) > 0).length) points.push('Preencher a coluna sigla_colbot_origem para permitir análise de proveniência institucional.');
+            if (!points.length) points.push('Não foram identificados problemas críticos nas estatísticas exploratórias, mas a revisão curatorial continua recomendada.');
+            return points;
+        }
+
+        function buildRecommendations(s, singletons, doubletons) {
+            const recommendations = [
+                'Padronizar nomes taxonômicos e revisar grafias de gênero, epíteto específico e autoria.',
+                'Conferir duplicatas e possíveis inconsistências entre número de tombo, espécie e localidade.',
+                'Usar a lista por família exportada como base para revisão florística e curadoria taxonômica.'
+            ];
+            if (s.identification.cf || s.total - s.identification.species) recommendations.push('Encaminhar registros com identificação incerta para especialistas ou revisão em herbário.');
+            if (Number(percentage(singletons + doubletons, s.species.length)) >= 40) recommendations.push('Planejar novas coletas em áreas e períodos pouco representados para avaliar se as espécies raras permanecem raras com maior esforço amostral.');
+            if (Number(percentage(s.completeness.coordinates, s.total)) < 85) recommendations.push('Georreferenciar registros sem coordenadas e validar pontos fora da área esperada.');
+            return recommendations;
+        }
+
+        function formatNumber(value) {
+            return Number(value || 0).toLocaleString('pt-BR');
+        }
+
+        function firstOrEmpty(array) {
+            return Array.isArray(array) && array.length ? array[0] : null;
+        }
+
+        function lastValue(array) {
+            return Array.isArray(array) && array.length ? array[array.length - 1] : 0;
+        }
+
+        function describeRankItem(item, total) {
+            if (!item) return 'não informado';
+            return `${item[0]}, com ${formatNumber(item[1])} registros (${percentage(item[1], total)}%)`;
+        }
+
+        function describeMonthItem(item, total) {
+            if (!item) return 'não informado';
+            const label = MONTHS[Number(item[0]) - 1] || item[0];
+            return `${label}, com ${formatNumber(item[1])} registros (${percentage(item[1], total)}%)`;
+        }
+
+        function describeAreaItem(item) {
+            if (!item) return 'não informada';
+            return `${item[0]}, com ${formatNumber(item[1])} registros e ${formatNumber(item[2])} espécies`;
+        }
+
+        function describeOriginItem(item, total) {
+            if (!item) return 'não informado';
+            return `${item[0]}, com ${formatNumber(item[1])} registros (${percentage(item[1], total)}%) e ${formatNumber(item[2])} espécies distintas`;
+        }
+
+        function clean(value) {
+            return String(value ?? '').trim();
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function deepMerge(target, source) {
+            const output = { ...target };
+            Object.entries(source).forEach(([key, value]) => {
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    output[key] = deepMerge(output[key] || {}, value);
+                } else {
+                    output[key] = value;
+                }
+            });
+            return output;
+        }
+    </script>
 </body>
 </html>
